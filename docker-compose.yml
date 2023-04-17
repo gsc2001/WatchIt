@@ -5,9 +5,24 @@ services:
     volumes:
       - $PWD/backend:/app
     environment:
-      - DEBUG=$DEBUG
+      - DEBUG=1
       - SECRET_KEY=$SECRET_KEY
       - PORT=8000
+    networks:
+      - web_network
+  
+  frontend:
+    build: ./frontend
+    volumes:
+      - $PWD/frontend:/app
+      - /app/node_modules/
+    environment:
+      - NODE_ENV=development
+      - CHOKIDAR_USEPOLLING=true
+      - WDS_SOCKET_PORT=0
+
+    depends_on:
+      - backend
     networks:
       - web_network
     
@@ -19,8 +34,10 @@ services:
       - web_network
     depends_on:
       - backend
+      - frontend
     ports:
       - 8000:80
+    
 
 networks:
   web_network:
