@@ -1,0 +1,29 @@
+version: '3.1'
+services:
+  backend:
+    build: ./backend
+    volumes:
+      - $PWD/backend:/app
+    environment:
+      - DEBUG=$DEBUG
+      - SECRET_KEY=$SECRET_KEY
+      - PORT=8000
+    networks:
+      - web_network
+    
+  nginx:
+    image: nginx:latest
+    volumes:
+      - ./config/nginx:/etc/nginx/conf.d/
+    networks:
+      - web_network
+    depends_on:
+      - backend
+    ports:
+      - 8000:80
+
+networks:
+  web_network:
+
+
+  
