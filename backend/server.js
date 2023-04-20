@@ -1,14 +1,22 @@
 const express = require('express');
-const app = express();
 const http = require('http');
+const { Server } = require('socket.io');
+const coreRouter = require('./routes');
+const config = require('./config');
+const connectDB = require('./utils/db');
+
+const app = express();
 const server = http.createServer(app);
 
-const config = require('./config');
+const io = new Server(server, { cors: {}, transports: ['websocket'] });
 
-app.get('/', (req, res) => {
-    res.send('<h1>Hello fda sd world</h1>');
-});
+app.use('/', coreRouter);
 
-server.listen(config.PORT, () => {
-    console.log('Server started!');
-});
+async function init() {
+    await connectDB();
+    server.listen(config.PORT, () => {
+        console.log('Server started!');
+    });
+}
+
+init();

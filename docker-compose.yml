@@ -1,46 +1,64 @@
 version: '3.1'
 services:
-  backend:
-    build: ./backend
-    volumes:
-      - $PWD/backend:/app
-    environment:
-      - DEBUG=1
-      - SECRET_KEY=$SECRET_KEY
-      - PORT=8000
-    networks:
-      - web_network
-  
-  frontend:
-    build: ./frontend
-    volumes:
-      - $PWD/frontend:/app
-      - /app/node_modules/
-    environment:
-      - NODE_ENV=development
-      - CHOKIDAR_USEPOLLING=true
-      - WDS_SOCKET_PORT=0
+    db:
+        image: mongo
+        networks:
+            - db_network
+        environment:
+            - MONGO_INITDB_ROOT_USERNAME=$DB_USERNAME
+            - MONGO_INITDB_ROOT_PASSWORD=$DB_PASSWORD
+            - MONGO_INITDB_DATABASE=$DB_NAME
+        volumes:
+            - ./data:/data/db
+    db_interface:
+        image: mongo-express
+        environment:
+            - ME_CONFIG_MONGODB_ADMINUSERNAME=$DB_USERNAME
+            - ME_CONFIG_MONGODB_ADMINPASSWORD=$DB_PASSWORD
+            - ME_CONFIG_MONGODB_SERVER=db
+        ports:
+            - 8081:8081
+        networks:
+            - db_network
+    backend:
+        build: ./backend
+        volumes:
+            - $PWD/backend:/app
+        environment:
+            - DEBUG=1
+            - SECRET_KEY=$SECRET_KEY
+            - PORT=8000
+            - DB_URL=mongodb://$DB_USERNAME:$DB_PASSWORD@db:27017
+        networks:
+            - web_network
+            - db_network
 
-    depends_on:
-      - backend
-    networks:
-      - web_network
-    
-  nginx:
-    image: nginx:latest
-    volumes:
-      - ./config/nginx:/etc/nginx/conf.d/
-    networks:
-      - web_network
-    depends_on:
-      - backend
-      - frontend
-    ports:
-      - 8000:80
-    
+    frontend:
+        build: ./frontend
+        volumes:
+            - $PWD/frontend:/app
+            - /app/node_modules/
+        environment:
+            - NODE_ENV=development
+            - CHOKIDAR_USEPOLLING=true
+            - WDS_SOCKET_PORT=0
+        depends_on:
+            - backend
+        networks:
+            - web_network
+
+    nginx:
+        image: nginx:latest
+        volumes:
+            - ./config/nginx:/etc/nginx/conf.d/
+        networks:
+            - web_network
+        depends_on:
+            - backend
+            - frontend
+        ports:
+            - 8000:80
 
 networks:
-  web_network:
-
-
-  
+    web_network:
+    db_network:
