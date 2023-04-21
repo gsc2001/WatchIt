@@ -1,13 +1,19 @@
 const { Server } = require('socket.io');
 
 /** @type {Server} */
-let io;
+var io;
 
 function createIO(server) {
-    io = new Server(server, { cors: {}, transports: ['websocket'] });
+    io = new Server(server, {
+        cors: {},
+        transports: ['websocket'],
+    });
+}
+function getIO() {
+    return io;
 }
 
 module.exports = {
     createIO,
-    io,
+    getIO,
 };

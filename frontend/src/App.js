@@ -1,9 +1,14 @@
 import logo from './logo.svg';
 import './App.css';
+import Test from './components/test';
+import { useEffect } from 'react';
+import { io } from 'socket.io-client';
 
 function App() {
+
     return (
         <div className="App">
+            <Test />
             <header className="App-header">
                 <img src={logo} className="App-logo" alt="logo" />
                 <p>
