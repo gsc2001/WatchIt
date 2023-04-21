@@ -34,9 +34,9 @@ services:
             - db_network
 
     frontend:
-        build: ./frontend
+        build: ./frontend2
         volumes:
-            - $PWD/frontend:/app
+            - $PWD/frontend2:/app
             - /app/node_modules/
         environment:
             - NODE_ENV=development

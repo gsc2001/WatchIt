@@ -33,6 +33,7 @@ import {
     isYouTube,
     isMagnet,
     isHttp,
+    ioPath,
 } from '../../utils';
 import { generateName } from '../../utils/generateName';
 import { Chat } from '../Chat';
@@ -236,26 +237,23 @@ export default class App extends React.Component<AppProps, AppState> {
     }
 
     init = async () => {
-        let roomId = '/' + this.props.urlRoomId;
+        let roomId = this.props.urlRoomId;
         // if a vanity name, resolve the url to a room id
-        if (this.props.vanity) {
-            try {
-                const response = await axios.get(
-                    serverPath + '/resolveRoom/' + this.props.vanity
-                );
-                if (response.data.roomId) {
-                    roomId = response.data.roomId;
-                } else {
-                    this.setState({ overlayMsg: "Couldn't load this room." });
-                }
-            } catch (e) {
-                console.error(e);
+        try {
+            const res = await axios.get(serverPath + '/checkRoom/' + roomId);
+            if (res.data.roomId) {
+                roomId = res.data.roomId as string;
+            } else {
                 this.setState({ overlayMsg: "Couldn't load this room." });
                 return;
             }
+        } catch (e) {
+            console.error(e);
+            this.setState({ overlayMsg: "Couldn't load this room." });
+            return;
         }
         this.setState({ roomId }, () => {
-            this.join(roomId);
+            this.join(roomId as string);
         });
     };
 
@@ -271,14 +269,13 @@ export default class App extends React.Component<AppProps, AppState> {
         } catch (e) {
             console.warn('[ALERT] Could not parse saved passwords');
         }
-        const response = await axios.get(serverPath + '/resolveShard' + roomId);
-        const shard = Number(response.data) ?? '';
-        const socket = io(serverPath + roomId, {
+        // const response = await axios.get(serverPath + '/resolveShard' + roomId);
+        // const shard = Number(response.data) ?? '';
+        const socket = io(ioPath + roomId, {
             transports: ['websocket'],
             query: {
                 clientId: getAndSaveClientId(),
                 password,
-                shard,
             },
         });
         this.socket = socket;
@@ -292,10 +289,13 @@ export default class App extends React.Component<AppProps, AppState> {
                 warningMessage: '',
             });
             // Load username from localstorage
-            let userName = window.localStorage.getItem('watchparty-username');
-            this.updateName(null, {
-                value: userName || (await generateName()),
-            });
+            let userName =
+                window.localStorage.getItem('watchparty-username') || '';
+            if (!userName) {
+                userName = await generateName();
+            }
+            console.log(userName);
+            this.updateName(null, { value: userName });
         });
         socket.on('connect_error', (err: any) => {
             console.error(err);
@@ -364,33 +364,18 @@ export default class App extends React.Component<AppProps, AppState> {
                 {
                     roomMedia: currentMedia,
                     roomPaused: data.paused,
-                    roomSubtitle: data.subtitle,
-                    roomLoop: data.loop,
-                    roomPlaybackRate: data.playbackRate,
                     loading: Boolean(data.video),
-                    nonPlayableMedia: false,
-                    controller: data.controller,
-                    isLiveHls: false,
                 },
                 async () => {
                     const leftVideo = this.HTMLInterface.getVideoEl();
 
                     // Stop all players
                     // Unless the user is sharing a file, because we play it in leftVideo and capture stream
-                    if (!this.isLocalStreamAFile) {
-                        this.HTMLInterface.pauseVideo();
-                    }
+                    this.HTMLInterface.pauseVideo();
+
                     this.YouTubeInterface.stopVideo();
 
-                    if (!this.isLocalStreamAFile) {
-                        this.Player().clearState();
-                    }
-                    if (data.subtitle) {
-                        this.Player().loadSubtitles(data.subtitle);
-                    }
-                    if (data.playbackRate) {
-                        this.Player().setPlaybackRate(data.playbackRate);
-                    }
+                    this.Player().clearState();
 
                     if (
                         this.usingYoutube() &&
@@ -454,88 +439,12 @@ export default class App extends React.Component<AppProps, AppState> {
                         : this.state.unreadCount + 1,
             });
         });
-        socket.on('REC:addReaction', (data: Reaction) => {
-            const { chat } = this.state;
-            const msgIndex = chat.findIndex(
-                m => m.id === data.msgId && m.timestamp === data.msgTimestamp
-            );
-            if (msgIndex === -1) {
-                return;
-            }
-            const msg = chat[msgIndex];
-            msg.reactions = msg.reactions || {};
-            msg.reactions[data.value] = msg.reactions[data.value] || [];
-            msg.reactions[data.value].push(data.user);
-            this.setState({ chat }, () => {
-                // if we add a reaction to the last message we need to scroll down
-                // or else the reaction icon might be hidden
-                if (
-                    msgIndex === chat.length - 1 &&
-                    this.chatRef.current?.state.isNearBottom
-                ) {
-                    this.chatRef.current?.scrollToBottom();
-                }
-            });
-        });
-        socket.on('REC:removeReaction', (data: Reaction) => {
-            const { chat } = this.state;
-            const msg = chat.find(
-                m => m.id === data.msgId && m.timestamp === data.msgTimestamp
-            );
-            if (!msg || !msg.reactions?.[data.value]) {
-                return;
-            }
-            msg.reactions[data.value] = msg.reactions[data.value].filter(
-                id => id !== data.user
-            );
-            this.setState({ chat });
-        });
-        socket.on('REC:tsMap', (data: NumberDict) => {
-            this.setState({ tsMap: data }, () => {
-                // Dynamic playback rate based on timestamps
-                // Disable for sharing types where the users can have different timestamps
-                // e.g. screenshare, fileshare, .m3u8 HLS streams
-                // Also not necessary for WebRTC sharing since it should be close to realtime
-                if (
-                    !this.state.roomPaused &&
-                    !this.state.isLiveHls &&
-                    this.hasDuration() &&
-                    this.state.roomPlaybackRate === 0
-                ) {
-                    const leader = this.getLeaderTime();
-                    const delta = leader - data[this.socket.id];
-                    // Set leader pbr to 1
-                    let pbr = 1;
-                    // Add .01 pbr for each 100ms delay
-                    if (delta > 0.5) {
-                        pbr += Number((delta / 10).toFixed(2));
-                        pbr = Math.min(pbr, 1.2);
-                    }
-                    // console.log(delta, pbr);
-                    if (this.Player().getPlaybackRate() !== pbr) {
-                        this.Player().setPlaybackRate(pbr);
-                    }
-                }
-                if (this.state.roomSubtitle) {
-                    const sharer = this.state.participants.find(
-                        p => p.isScreenShare
-                    );
-                    if (sharer && sharer.id !== this.socket.id) {
-                        // Sync only if someone is sharing and it's not us
-                        const sharerTime = this.state.tsMap[sharer.id];
-                        this.Player().syncSubtitles(sharerTime);
-                    }
-                }
-            });
-        });
         socket.on('REC:nameMap', (data: StringDict) => {
+            console.log(data);
             this.setState({ nameMap: data });
         });
-        socket.on('REC:pictureMap', (data: StringDict) => {
-            this.setState({ pictureMap: data });
-        });
-        socket.on('REC:lock', (data: string) => {
-            this.setState({ roomLock: data });
+        socket.on('REC:tsMap', (data: NumberDict) => {
+            this.setState({ tsMap: data });
         });
         socket.on('roster', (data: User[]) => {
             this.setState({
@@ -549,65 +458,6 @@ export default class App extends React.Component<AppProps, AppState> {
         socket.on('playlist', (data: PlaylistVideo[]) => {
             this.setState({ playlist: data });
         });
-        socket.on(
-            'signalSS',
-            async (data: {
-                msg: { ice: any; sdp: any };
-                from: string;
-                sharer: boolean;
-            }) => {
-                process.env.NODE_ENV === 'development' && console.log(data);
-                // Handle messages received from signaling server
-                const msg = data.msg;
-                const from = data.from;
-                // Determine whether the message came from the sharer or the sharee
-                const pc = (
-                    data.sharer ? this.consumerConn : this.publisherConns[from]
-                ) as RTCPeerConnection;
-                if (msg.ice !== undefined) {
-                    pc.addIceCandidate(new RTCIceCandidate(msg.ice));
-                } else if (msg.sdp && msg.sdp.type === 'offer') {
-                    // console.log('offer');
-                    // TODO Currently ios/Safari cannot handle this property, so remove it from the offer
-                    const _sdp = msg.sdp.sdp
-                        .split('\n')
-                        .filter((line: string) => {
-                            return line.trim() !== 'a=extmap-allow-mixed';
-                        })
-                        .join('\n');
-                    msg.sdp.sdp = _sdp;
-                    await pc.setRemoteDescription(
-                        new RTCSessionDescription(msg.sdp)
-                    );
-                    const answer = await pc.createAnswer();
-                    // Allow stereo audio
-                    answer.sdp = answer.sdp?.replace(
-                        'useinbandfec=1',
-                        'useinbandfec=1; stereo=1; maxaveragebitrate=510000'
-                    );
-                    // console.log(answer.sdp);
-                    // Allow multichannel audio if Chromium
-                    const isChromium = Boolean((window as any).chrome);
-                    if (isChromium) {
-                        answer.sdp = answer.sdp
-                            ?.replace('opus/48000/2', 'multiopus/48000/6')
-                            .replace(
-                                'useinbandfec=1',
-                                'channel_mapping=0,4,1,2,3,5; num_streams=4; coupled_streams=2;maxaveragebitrate=510000;minptime=10;useinbandfec=1'
-                            );
-                    }
-                    await pc.setLocalDescription(answer);
-                    this.sendSignalSS(
-                        from,
-                        { sdp: pc.localDescription },
-                        !data.sharer
-                    );
-                } else if (msg.sdp && msg.sdp.type === 'answer') {
-                    pc.setRemoteDescription(new RTCSessionDescription(msg.sdp));
-                }
-            }
-        );
-        socket.on('REC:getRoomState', this.handleRoomState);
         window.setInterval(() => {
             if (this.state.roomMedia) {
                 this.socket.emit('CMD:ts', this.Player().getCurrentTime());
@@ -696,19 +546,6 @@ export default class App extends React.Component<AppProps, AppState> {
             return `${window.location.origin}/r/${vanity}`;
         }
         return `${window.location.origin}/watch${this.state.roomId}`;
-    };
-
-    handleRoomState = (data: any) => {
-        this.setOwner(data.owner);
-        this.setVanity(data.vanity);
-        this.setPassword(data.password);
-        this.setInviteLink(this.getInviteLink(data.vanity));
-        this.setIsChatDisabled(data.isChatDisabled);
-        this.setRoomTitle(data.roomTitle);
-        this.setRoomDescription(data.roomDescription);
-        this.setRoomTitleColor(data.roomTitleColor);
-        this.setMediaPath(data.mediaPath);
-        window.history.replaceState('', '', this.getInviteLink(data.vanity));
     };
 
     setOwner = (owner: string) => {
@@ -1265,14 +1102,10 @@ export default class App extends React.Component<AppProps, AppState> {
     };
 
     updateName = (_e: any, data: { value: string }) => {
+        console.log(data.value);
         this.setState({ myName: data.value });
         this.socket.emit('CMD:name', data.value);
         window.localStorage.setItem('watchparty-username', data.value);
-    };
-
-    updatePicture = (url: string) => {
-        this.setState({ myPicture: url });
-        this.socket.emit('CMD:picture', url);
     };
 
     getMediaDisplayName = (input: string) => {

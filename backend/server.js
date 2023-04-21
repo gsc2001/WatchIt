@@ -4,6 +4,7 @@ const config = require('./config');
 const connectDB = require('./utils/db');
 const Room = require('./room');
 const { Server } = require('socket.io');
+const { generateRandomCode } = require('./utils/general');
 
 const app = express();
 const server = http.createServer(app);
@@ -25,14 +26,16 @@ app.get('/ping', async (req, res) => {
 
 app.post('/createRoom', async (req, res) => {
     let roomId;
+
     do {
         roomId = generateRandomCode(config.CODE_LENGTH);
     } while (rooms.has(roomId));
 
-    const room = new Room(roomId);
+    const room = new Room(io, roomId);
     rooms.set(roomId, room);
+    console.log('Created room: ', roomId);
 
-    res.json({ roomId });
+    res.json({ name: roomId });
 });
 
 app.get('/checkRoom/:roomId', async (req, res) => {

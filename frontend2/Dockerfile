@@ -7,4 +7,4 @@ COPY package*.json .
 RUN npm install --save-dev
 COPY . .
 
-CMD ["PORT=3000", "npm", "run" ,"react"]
+CMD ["npm", "run" ,"react"]

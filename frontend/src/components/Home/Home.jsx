@@ -77,15 +77,7 @@ export const Home = () => {
     );
 };
 
-const Feature = ({
-    icon,
-    text,
-    title,
-}: {
-    icon: string;
-    text: string;
-    title: string;
-}) => {
+const Feature = ({ icon, text, title }) => {
     return (
         <div
             style={{
@@ -97,28 +89,14 @@ const Feature = ({
                 minWidth: '180px',
             }}
         >
-            <Icon fitted size="huge" name={icon as SemanticICONS} />
+            <Icon fitted size="huge" name={icon} />
             <h4 className={styles.featureTitle}>{title}</h4>
             <div className={styles.featureText}>{text}</div>
         </div>
     );
 };
 
-export const Hero = ({
-    heroText,
-    subText,
-    subText2,
-    action,
-    image,
-    color,
-}: {
-    heroText?: string;
-    subText?: string;
-    subText2?: string;
-    action?: React.ReactNode;
-    image?: string;
-    color?: string;
-}) => {
+export const Hero = ({ heroText, subText, subText2, action, image, color }) => {
     return (
         <div
             className={`${styles.hero} ${
