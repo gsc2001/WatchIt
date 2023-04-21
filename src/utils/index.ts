@@ -141,10 +141,6 @@ export const isFileShare = (input: string) => {
   return input.startsWith('fileshare://');
 };
 
-export const isVBrowser = (input: string) => {
-  return input.startsWith('vbrowser://');
-};
-
 export async function testAutoplay() {
   const result = await canAutoplay.video();
   return result.result;

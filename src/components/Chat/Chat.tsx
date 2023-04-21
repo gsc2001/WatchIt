@@ -17,7 +17,6 @@ import {
   isEmojiString,
 } from '../../utils';
 import { Separator } from '../App/App';
-import { UserMenu } from '../UserMenu/UserMenu';
 import { Socket } from 'socket.io-client';
 import firebase from 'firebase/compat/app';
 import classes from './Chat.module.css';
@@ -183,22 +182,6 @@ export class Chat extends React.Component<ChatProps> {
       return `locked the room`;
     } else if (cmd === 'unlock') {
       return 'unlocked the room';
-    } else if (cmd === 'vBrowserTimeout') {
-      return (
-        <React.Fragment>
-          The VBrowser shut down automatically.
-          <br />
-          Subscribe for longer sessions.
-        </React.Fragment>
-      );
-    } else if (cmd === 'vBrowserAlmostTimeout') {
-      return (
-        <React.Fragment>
-          The VBrowser will shut down soon.
-          <br />
-          Subscribe for longer sessions.
-        </React.Fragment>
-      );
     }
     return cmd;
   };
@@ -241,7 +224,6 @@ export class Chat extends React.Component<ChatProps> {
                 nameMap={this.props.nameMap}
                 formatMessage={this.formatMessage}
                 owner={this.props.owner}
-                user={this.props.user}
                 socket={this.props.socket}
                 isChatDisabled={this.props.isChatDisabled}
                 setReactionMenu={this.setReactionMenu}
@@ -365,7 +347,6 @@ const ChatMessage = ({
   nameMap,
   pictureMap,
   formatMessage,
-  user,
   socket,
   owner,
   isChatDisabled,
@@ -377,7 +358,6 @@ const ChatMessage = ({
   nameMap: StringDict;
   pictureMap: StringDict;
   formatMessage: (cmd: string, msg: string) => React.ReactNode;
-  user: firebase.User | undefined;
   socket: Socket;
   owner: string | undefined;
   isChatDisabled: boolean | undefined;
@@ -412,21 +392,6 @@ const ChatMessage = ({
         />
       ) : null}
       <Comment.Content>
-        <UserMenu
-          displayName={nameMap[id] || id}
-          user={user}
-          timestamp={timestamp}
-          socket={socket}
-          userToManage={id}
-          isChatMessage
-          disabled={!Boolean(owner && owner === user?.uid)}
-          trigger={
-            <Comment.Author as="a" className={styles.light}>
-              {Boolean(system) && 'System'}
-              {nameMap[id] || id}
-            </Comment.Author>
-          }
-        />
         <Comment.Metadata className={styles.dark}>
           <div title={new Date(timestamp).toLocaleDateString()}>
             {new Date(timestamp).toLocaleTimeString()}
@@ -577,46 +542,3 @@ const ChatMessage = ({
     </Comment>
   );
 };
-
-// class ReactionMenuInner extends React.Component<{
-//   handleReactionClick: (value: string, id?: string, timestamp?: string) => void;
-//   closeMenu: () => void;
-//   yPosition: number;
-//   xPosition: number;
-// }> {
-//   state = {
-//     containerWidth: 0,
-//   };
-//   handleClickOutside = () => {
-//     this.props.closeMenu();
-//   };
-//   containerRef = React.createRef<HTMLDivElement>();
-//   componentDidMount() {
-//     this.setState({ containerWidth: this.containerRef.current?.offsetWidth });
-//   }
-//   render() {
-//     return (
-//       <div
-//         ref={this.containerRef}
-//         className={classes.reactionMenuContainer}
-//         style={{
-//           top: this.props.yPosition - 9,
-//           left: this.props.xPosition - this.state.containerWidth - 35,
-//         }}
-//       >
-//         {reactionEmojis.map((reaction) => (
-//           <div
-//             onClick={() => {
-//               this.props.handleReactionClick(reaction);
-//               this.props.closeMenu();
-//             }}
-//             style={{ cursor: 'pointer' }}
-//           >
-//             {reaction}
-//           </div>
-//         ))}
-//       </div>
-//     );
-//   }
-// }
-// const ReactionMenu = onClickOutside(ReactionMenuInner);

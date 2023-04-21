@@ -49,6 +49,7 @@ export class YouTube implements Player {
   playVideo = async () => {
     setTimeout(() => {
       console.log('play yt');
+      console.log(this.watchPartyYTPlayer);
       this.watchPartyYTPlayer?.playVideo();
     }, 200);
   };

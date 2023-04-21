@@ -4,7 +4,6 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 import { serverPath } from '../../utils';
 import axios from 'axios';
-import { ManageSubButton } from '../SubscribeButton/SubscribeButton';
 
 export class ProfileModal extends React.Component<{
   close: () => void;
@@ -192,9 +191,7 @@ export class ProfileModal extends React.Component<{
               <Icon name="check circle" />
               Verify Email
             </Button>
-            {this.props.isSubscriber && (
-              <ManageSubButton user={this.props.user} />
-            )}
+
             {this.state.linkedDiscord ? (
               <Button
                 icon
