@@ -90,12 +90,6 @@ const ChatVideoCard: React.FC<{
         {video.type === 'youtube' && (
           <Icon color="red" size="large" name="youtube" />
         )}
-        {video.type === 'file' && (
-          <Icon color="black" size="large" name="linkify" />
-        )}
-        {video.type === 'magnet' && (
-          <Icon color="red" size="large" name="magnet" />
-        )}
         <div className={classes.Content}>
           <div className={classes.Title}>{decodeEntities(video.name)}</div>
           <div className={classes.ChannelName}>{video.channel}</div>

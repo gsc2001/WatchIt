@@ -33,9 +33,6 @@ import {
   isYouTube,
   isMagnet,
   isHttp,
-  isHls,
-  isScreenShare,
-  isFileShare,
 } from '../../utils';
 import { generateName } from '../../utils/generateName';
 import { Chat } from '../Chat';
@@ -46,8 +43,6 @@ import { SearchComponent } from '../SearchComponent/SearchComponent';
 import { Controls } from '../Controls/Controls';
 import { ErrorModal } from '../Modal/ErrorModal';
 import { PasswordModal } from '../Modal/PasswordModal';
-import firebase from 'firebase/compat/app';
-import { SubtitleModal } from '../Modal/SubtitleModal';
 import { HTML } from './HTML';
 import { YouTube } from './YouTube';
 import type WebTorrent from 'webtorrent';
@@ -76,8 +71,6 @@ window.watchparty = {
 interface AppProps {
   vanity?: string;
   urlRoomId?: string;
-  user?: firebase.User;
-  isSubscriber: boolean;
   beta: boolean;
   streamPath: string | undefined;
 }
@@ -119,9 +112,6 @@ interface AppState {
   settings: Settings;
   nonPlayableMedia: boolean;
   currentTab: string;
-  isSubscribeModalOpen: boolean;
-  isVBrowserModalOpen: boolean;
-  isScreenShareModalOpen: boolean;
   isSubtitleModalOpen: boolean;
   roomLock: string;
   controller?: string;
@@ -178,9 +168,6 @@ export default class App extends React.Component<AppProps, AppState> {
     nonPlayableMedia: false,
     currentTab:
       new URLSearchParams(window.location.search).get('tab') ?? 'chat',
-    isSubscribeModalOpen: false,
-    isVBrowserModalOpen: false,
-    isScreenShareModalOpen: false,
     isSubtitleModalOpen: false,
     roomLock: '',
     controller: '',
@@ -713,26 +700,7 @@ export default class App extends React.Component<AppProps, AppState> {
     this.setState({ mediaPath });
   };
 
-  setRoomLock = async (locked: boolean) => {
-    const uid = this.props.user?.uid;
-    const token = await this.props.user?.getIdToken();
-    this.socket.emit('CMD:lock', { uid, token, locked });
-  };
-
-  haveLock = () => {
-    if (!this.state.roomLock) {
-      return true;
-    }
-    return this.props.user?.uid === this.state.roomLock;
-  };
-
   setIsChatDisabled = (val: boolean) => this.setState({ isChatDisabled: val });
-
-  clearChat = async () => {
-    const uid = this.props.user?.uid;
-    const token = await this.props.user?.getIdToken();
-    this.socket.emit('CMD:deleteChatMessages', { uid, token });
-  };
 
   // Share the video to mediasoup
   publishMediasoup = async (mediasoupURL: string) => {
@@ -1139,9 +1107,6 @@ export default class App extends React.Component<AppProps, AppState> {
   };
 
   roomTogglePlay = () => {
-    if (!this.haveLock()) {
-      return;
-    }
     const shouldPlay = this.Player().shouldPlay();
     if (shouldPlay) {
       this.socket.emit('CMD:play');
@@ -1253,12 +1218,6 @@ export default class App extends React.Component<AppProps, AppState> {
     this.socket.emit('CMD:picture', url);
   };
 
-  updateUid = async (user: firebase.User) => {
-    const uid = user.uid;
-    const token = await user.getIdToken();
-    this.socket.emit('CMD:uid', { uid, token });
-  };
-
   getMediaDisplayName = (input: string) => {
     if (!input) {
       return '';
@@ -1351,7 +1310,6 @@ export default class App extends React.Component<AppProps, AppState> {
         subtitled={this.Player().isSubtitled()}
         currentTime={this.Player().getCurrentTime()}
         duration={this.Player().getDuration()}
-        disabled={!this.haveLock()}
         leaderTime={this.hasDuration() ? this.getLeaderTime() : undefined}
         playbackRate={this.Player().getPlaybackRate()}
         isYouTube={this.usingYoutube()}
@@ -1385,7 +1343,7 @@ export default class App extends React.Component<AppProps, AppState> {
           <Input
             inverted
             fluid
-            label={'My name is:'}
+            label={'Name'}
             value={this.state.myName}
             onChange={this.updateName}
             style={{ visibility: displayRightContent ? '' : 'hidden' }}
@@ -1403,52 +1361,6 @@ export default class App extends React.Component<AppProps, AppState> {
             }
           />
         </Form>
-        {
-          <Menu
-            inverted
-            widths={3}
-            style={{
-              marginTop: '4px',
-              marginBottom: '4px',
-              visibility: displayRightContent ? '' : 'hidden',
-              height: '40px',
-            }}
-          >
-            <Menu.Item
-              name="chat"
-              active={this.state.currentTab === 'chat'}
-              onClick={() => {
-                this.setState({ currentTab: 'chat', unreadCount: 0 });
-              }}
-              as="a"
-            >
-              Chat
-              {this.state.unreadCount > 0 && (
-                <Label circular color="red">
-                  {this.state.unreadCount}
-                </Label>
-              )}
-            </Menu.Item>
-            <Menu.Item
-              name="people"
-              active={this.state.currentTab === 'people'}
-              onClick={() => this.setState({ currentTab: 'people' })}
-              as="a"
-            >
-              People
-              <Label
-                circular
-                color={
-                  getColorForString(
-                    this.state.participants.length.toString()
-                  ) as SemanticCOLORS
-                }
-              >
-                {this.state.participants.length}
-              </Label>
-            </Menu.Item>
-          </Menu>
-        }
         <Chat
           chat={this.state.chat}
           nameMap={this.state.nameMap}
@@ -1459,7 +1371,6 @@ export default class App extends React.Component<AppProps, AppState> {
           hide={this.state.currentTab !== 'chat' || !displayRightContent}
           isChatDisabled={this.state.isChatDisabled}
           owner={this.state.owner}
-          user={this.props.user}
           ref={this.chatRef}
           isLiveHls={this.state.isLiveHls}
         />
@@ -1496,19 +1407,6 @@ export default class App extends React.Component<AppProps, AppState> {
           />
         )}
 
-        {this.state.isSubtitleModalOpen && (
-          <SubtitleModal
-            closeModal={() => this.setState({ isSubtitleModalOpen: false })}
-            socket={this.socket}
-            roomSubtitle={this.state.roomSubtitle}
-            roomMedia={this.state.roomMedia}
-            haveLock={this.haveLock}
-            getMediaDisplayName={this.getMediaDisplayName}
-            beta={this.props.beta}
-            setSubtitleMode={this.Player().setSubtitleMode}
-            getSubtitleMode={this.Player().getSubtitleMode}
-          />
-        )}
         {this.state.overlayMsg && <ErrorModal error={this.state.overlayMsg} />}
         {this.state.isErrorAuth && (
           <PasswordModal
@@ -1557,7 +1455,6 @@ export default class App extends React.Component<AppProps, AppState> {
           ></Message>
         )}
         <TopBar
-          isSubscriber={this.props.isSubscriber}
           roomTitle={this.state.roomTitle}
           roomDescription={this.state.roomDescription}
           roomTitleColor={this.state.roomTitleColor}
@@ -1593,7 +1490,6 @@ export default class App extends React.Component<AppProps, AppState> {
                         launchMultiSelect={this.launchMultiSelect}
                         streamPath={this.props.streamPath}
                         mediaPath={this.state.mediaPath}
-                        disabled={!this.haveLock()}
                         playlist={this.state.playlist}
                       />
                       <Separator />
@@ -1607,7 +1503,6 @@ export default class App extends React.Component<AppProps, AppState> {
                             playlistAdd={this.roomPlaylistAdd}
                             type={'youtube'}
                             streamPath={this.props.streamPath}
-                            disabled={!this.haveLock()}
                           />
                         )}
                         {Boolean(this.props.streamPath) && (
@@ -1617,7 +1512,6 @@ export default class App extends React.Component<AppProps, AppState> {
                             type={'stream'}
                             streamPath={this.props.streamPath}
                             launchMultiSelect={this.launchMultiSelect}
-                            disabled={!this.haveLock()}
                           />
                         )}
                       </div>

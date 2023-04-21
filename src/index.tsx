@@ -45,7 +45,6 @@ class WatchParty extends React.Component {
               <React.Fragment>
                 <TopBar
                   // user={this.state.user}
-                  isSubscriber={this.state.isSubscriber}
                   hideNewRoom
                 />
                 <Home />
@@ -66,7 +65,6 @@ class WatchParty extends React.Component {
           render={(props) => {
             return (
               <App
-                isSubscriber={this.state.isSubscriber}
                 urlRoomId={props.match.params.roomId}
                 streamPath={this.state.streamPath}
                 beta={this.state.beta}
@@ -80,7 +78,6 @@ class WatchParty extends React.Component {
           render={(props) => {
             return (
               <App
-                isSubscriber={this.state.isSubscriber}
                 vanity={props.match.params.vanity}
                 streamPath={this.state.streamPath}
                 beta={this.state.beta}
@@ -90,7 +87,7 @@ class WatchParty extends React.Component {
         />
 
         <Route path="/debug">
-          <TopBar isSubscriber={this.state.isSubscriber} />
+          <TopBar />
           <Suspense fallback={null}>
             <Debug />
           </Suspense>

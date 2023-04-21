@@ -18,7 +18,6 @@ import {
 } from '../../utils';
 import { Separator } from '../App/App';
 import { Socket } from 'socket.io-client';
-import firebase from 'firebase/compat/app';
 import classes from './Chat.module.css';
 import {
   CSSTransition,
@@ -36,7 +35,6 @@ interface ChatProps {
   getMediaDisplayName: (input: string) => string;
   hide?: boolean;
   isChatDisabled?: boolean;
-  user: firebase.User | undefined;
   owner: string | undefined;
   ref: RefObject<Chat>;
   isLiveHls: boolean;
