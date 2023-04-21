@@ -37,7 +37,6 @@ import {
 import { generateName } from '../../utils/generateName';
 import { Chat } from '../Chat';
 import { TopBar } from '../TopBar';
-import { MultiStreamModal } from '../Modal/MultiStreamModal';
 import { ComboBox } from '../ComboBox/ComboBox';
 import { SearchComponent } from '../SearchComponent/SearchComponent';
 import { Controls } from '../Controls/Controls';
@@ -1339,28 +1338,7 @@ export default class App extends React.Component<AppProps, AppState> {
             : styles.fullHeightColumn
         }`}
       >
-        <Form autoComplete="off">
-          <Input
-            inverted
-            fluid
-            label={'Name'}
-            value={this.state.myName}
-            onChange={this.updateName}
-            style={{ visibility: displayRightContent ? '' : 'hidden' }}
-            icon={
-              <Icon
-                onClick={async () =>
-                  this.updateName(null, { value: await generateName() })
-                }
-                name="random"
-                inverted
-                circular
-                link
-                title="Generate a random name"
-              />
-            }
-          />
-        </Form>
+        <p style={{ color: 'white' }}>Name: {this.state.myName}</p>
         <Chat
           chat={this.state.chat}
           nameMap={this.state.nameMap}
@@ -1369,44 +1347,13 @@ export default class App extends React.Component<AppProps, AppState> {
           scrollTimestamp={this.state.scrollTimestamp}
           getMediaDisplayName={this.getMediaDisplayName}
           hide={this.state.currentTab !== 'chat' || !displayRightContent}
-          isChatDisabled={this.state.isChatDisabled}
-          owner={this.state.owner}
           ref={this.chatRef}
-          isLiveHls={this.state.isLiveHls}
         />
         {this.state.state === 'connected'}
       </Grid.Column>
     );
     return (
       <React.Fragment>
-        {!this.state.isAutoPlayable && (
-          <Modal inverted="true" basic open>
-            <div style={{ display: 'flex', justifyContent: 'center' }}>
-              <Button
-                primary
-                size="large"
-                onClick={() => {
-                  this.setState({ isAutoPlayable: true });
-                  this.localSetMute(false);
-                  this.localSetVolume(1);
-                }}
-                icon
-                labelPosition="left"
-              >
-                <Icon name="volume up" />
-                Click to unmute
-              </Button>
-            </div>
-          </Modal>
-        )}
-        {this.state.multiStreamSelection && (
-          <MultiStreamModal
-            streams={this.state.multiStreamSelection}
-            setMedia={this.roomSetMedia}
-            resetMultiSelect={this.resetMultiSelect}
-          />
-        )}
-
         {this.state.overlayMsg && <ErrorModal error={this.state.overlayMsg} />}
         {this.state.isErrorAuth && (
           <PasswordModal

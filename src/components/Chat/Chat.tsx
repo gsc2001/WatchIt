@@ -35,9 +35,7 @@ interface ChatProps {
   getMediaDisplayName: (input: string) => string;
   hide?: boolean;
   isChatDisabled?: boolean;
-  owner: string | undefined;
   ref: RefObject<Chat>;
-  isLiveHls: boolean;
 }
 
 export class Chat extends React.Component<ChatProps> {
@@ -167,9 +165,7 @@ export class Chat extends React.Component<ChatProps> {
         </React.Fragment>
       );
     } else if (cmd === 'seek') {
-      return `jumped to ${
-        this.props.isLiveHls ? formatUnixTime(msg) : formatTimestamp(msg)
-      }`;
+      return `jumped to ${formatTimestamp(msg)}`;
     } else if (cmd === 'play') {
       return `started the video at ${formatTimestamp(msg)}`;
     } else if (cmd === 'pause') {
@@ -221,7 +217,6 @@ export class Chat extends React.Component<ChatProps> {
                 pictureMap={this.props.pictureMap}
                 nameMap={this.props.nameMap}
                 formatMessage={this.formatMessage}
-                owner={this.props.owner}
                 socket={this.props.socket}
                 isChatDisabled={this.props.isChatDisabled}
                 setReactionMenu={this.setReactionMenu}
@@ -346,7 +341,6 @@ const ChatMessage = ({
   pictureMap,
   formatMessage,
   socket,
-  owner,
   isChatDisabled,
   setReactionMenu,
   handleReactionClick,
@@ -357,7 +351,6 @@ const ChatMessage = ({
   pictureMap: StringDict;
   formatMessage: (cmd: string, msg: string) => React.ReactNode;
   socket: Socket;
-  owner: string | undefined;
   isChatDisabled: boolean | undefined;
   setReactionMenu: (
     isOpen: boolean,
