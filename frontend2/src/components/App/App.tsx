@@ -421,7 +421,7 @@ export default class App extends React.Component<AppProps, AppState> {
                 }
             );
         });
-        socket.on('REC:chat', (data: ChatMessage) => {
+        socket.on('REC:chatMsg', (data: ChatMessage) => {
             if (
                 (document.visibilityState &&
                     document.visibilityState !== 'visible') ||
@@ -452,7 +452,7 @@ export default class App extends React.Component<AppProps, AppState> {
                 rosterUpdateTS: Number(new Date()),
             });
         });
-        socket.on('chatinit', (data: ChatMessage[]) => {
+        socket.on('REC:chatinit', (data: ChatMessage[]) => {
             this.setState({ chat: data, scrollTimestamp: Number(new Date()) });
         });
         socket.on('playlist', (data: PlaylistVideo[]) => {

@@ -17,6 +17,8 @@ class Room {
         this.paused = false;
         this.preventTSUpdate = false;
 
+        this.chatMsgs = [];
+
         // list of users
         /**@type{{ clientId:string, socketId:string, name?:string }[]} */
         this.roster = [];
@@ -47,6 +49,7 @@ class Room {
             socket.emit('REC:host', this.getState());
             socket.emit('REC:nameMap', this.nameMap);
             socket.emit('REC:tsMap', this.tsMap);
+            socket.emit('REC:chatinit', this.chatMsgs);
             this.io.of(this.namespace).emit('REC:roster', this.roster);
 
             socket.on('CMD:host', data => this.host(socket, data));
@@ -54,6 +57,7 @@ class Room {
             socket.on('CMD:play', () => this.playVideo(socket));
             socket.on('CMD:pause', () => this.pauseVideo(socket));
             socket.on('CMD:seek', data => this.seekVideo(socket, data));
+            socket.on('CMD:chat', data => this.sendChatMessage(socket, data));
             socket.on('CMD:askHost', () => {
                 socket.emit('REC:host', this.getState());
             });
@@ -73,6 +77,18 @@ class Room {
 
         this.io.of(this.namespace).emit('REC:host', this.getState());
         this.io.of(this.namespace).emit('REC:tsMap', this.tsMap);
+    }
+    sendChatMessage(socket, message) {
+        console.log('got chat message', message);
+        const chatMsg = {
+            id: socket.id,
+            msg: message,
+            timestamp: new Date().toISOString(),
+        };
+
+        this.chatMsgs.push(chatMsg);
+        this.chatMsgs = this.chatMsgs.splice(-100);
+        this.io.of(this.namespace).emit('REC:chatMsg', chatMsg);
     }
     playVideo(socket) {
         socket.broadcast.emit('REC:play');

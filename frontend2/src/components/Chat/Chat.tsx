@@ -117,8 +117,8 @@ export class Chat extends React.Component<ChatProps> {
         if (this.chatTooLong()) {
             return;
         }
-        this.setState({ chatMsg: '' });
         this.props.socket.emit('CMD:chat', this.state.chatMsg);
+        this.setState({ chatMsg: '' });
     };
 
     chatTooLong = () => {
