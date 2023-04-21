@@ -1,82 +1,70 @@
-# WatchParty
+# Getting Started with Create React App
 
-![screenshot](https://github.com/howardchung/watchparty/raw/master/public/screenshot_full.png)
+This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
-An website for watching videos together.
+## Available Scripts
 
-## Description
+In the project directory, you can run:
 
-- Synchronizes the video being watched with the current room
-- Plays, pauses, and seeks are synced to all watchers
-- Supports:
-  - Screen sharing (full screen, browser tab or application)
-  - Launch a shared virtual browser in the cloud (similar to rabb.it)
-  - Stream-your-own-file
-  - Video files on the Internet (anything accessible via HTTP)
-  - YouTube videos
-  - Magnet links (via WebTorrent)
-  - .m3u8 streams (HLS)
-- Create separate rooms for users on demand
-- Text chat
-- Video chat
+### `npm start`
 
-## Quick Start
+Runs the app in the development mode.\
+Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
 
-- Clone this repo via `git clone git@github.com:howardchung/watchparty.git`
-- Install npm dependencies for the project via `npm install`
-- Start the server via `PORT=8080 npm run dev`
-  - Defaults to port 8080, customize with `PORT` env var
-  - Run using self-signed HTTPS cert with `HTTPS=true`. This is needed for some WebRTC features (camera, etc.)
-- Start the React application in a separate shell and port via `PORT=3000 npm run react`
-  - Point to server using `REACT_APP_SERVER_HOST` env var if you customized it above
-  - Run using self-signed HTTPS cert with `HTTPS=true`. This is needed for some WebRTC features (camera, etc.)
-- Duplicate the `.env.example` file
-- Rename it to `.env`
-- Add config for the features you want as described in the advanced setup
+The page will reload when you make changes.\
+You may also see any lint errors in the console.
 
-## Advanced Setup (optional)
+### `npm test`
 
-All of these are optional and the application should work without them. Some functionality may be missing.
+Launches the test runner in the interactive watch mode.\
+See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
 
-### YouTube API (video search)
+### `npm run build`
 
-This project uses the YouTube API for video search, which requires an API key. You can get one from Google [here](https://console.developers.google.com).
+Builds the app for production to the `build` folder.\
+It correctly bundles React in production mode and optimizes the build for the best performance.
 
-Without an API key you won't be able to search for videos via the searchbox.
+The build is minified and the filenames include the hashes.\
+Your app is ready to be deployed!
 
-After creating a **YouTube Data API V3** access, you can create an API key which you can add to your environment variables by copying the `.env.example`, renaming it to `.env` and adding the key to the YOUTUBE_API_KEY variable.
+See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
 
-After that restart your server to enable the YouTube API access on your server.
+### `npm run eject`
 
-### Firebase Config (user authentication)
+**Note: this is a one-way operation. Once you `eject`, you can't go back!**
 
-This project uses Firebase for authentication. This is used for user login, account management, subscriptions, and handling some features like room locking/permanence.
+If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
 
-To set up, create a new Firebase app (or reuse an old one) from [here](https://console.firebase.google.com/). After creating an application, click on the settings cog icon in the left menu next to "Project overview" and click on project settings. From there, scroll down, create a web application and copy the Firebase SDK configuration snippet JSON data.
+Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
 
-Next, you have to stringify it: `JSON.stringify(PASTE_CONFIG_HERE)` in your browser console, then add it to `REACT_APP_FIREBASE_CONFIG` in your .env file.
+You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
 
-For server verification of accounts you'll also need `FIREBASE_ADMIN_SDK_CONFIG`, which you should do the same steps for.
+## Learn More
 
-### Virtual Browser Setup
+You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
 
-This project supports creating virtual browsers (using https://github.com/m1k1o/neko) either on a cloud provider, or by spawning Docker containers on the development server. For local development, the Docker on local approach is preferred.
+To learn React, check out the [React documentation](https://reactjs.org/).
 
-- Install Docker: `curl -fsSL https://get.docker.com | sh`
-- Make sure you have an SSH key pair set up on the server (`id_rsa` in `~/.ssh` directory)
-- Add `DOCKER_VM_HOST=localhost` to your .env file (can substitute localhost for a public hostname)
-- Add `NODE_ENV=development` to .env to enable create-on-demand behavior for VMs
-- Configure Redis by adding `REDIS_URL` to your .env file (Redis is required for virtual browser management)
+### Code Splitting
 
-### Room Persistence
+This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
 
-- Configure Postgres by adding DATABASE_URL to your .env file and then setting up the database schema
-- This allows rooms to persist between server restarts
+### Analyzing the Bundle Size
 
-## Tech
+This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
 
-- React
-- TypeScript
-- Node.js
-- Redis
-- Docker
+### Making a Progressive Web App
+
+This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+
+### Advanced Configuration
+
+This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+
+### Deployment
+
+This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+
+### `npm run build` fails to minify
+
+This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
