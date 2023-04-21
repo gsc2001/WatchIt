@@ -103,40 +103,12 @@ export class Controls extends React.Component<ControlsProps> {
     return (
       <div className={styles.controls}>
         <Icon
-          size="large"
           onClick={() => {
             roomTogglePlay();
           }}
           className={`${styles.control} ${styles.action}`}
           disabled={disabled || isPauseDisabled}
           name={paused ? 'play' : 'pause'}
-        />
-        <Popup
-          content={
-            isBehind
-              ? 'Skip to the live stream position'
-              : "You're at the live stream position"
-          }
-          trigger={
-            <div
-              onClick={() => {
-                if (this.props.isLiveHls) {
-                  // do a regular seek rather than sync self if it's HLS since we're basically seeking to the live position
-                  // Also, clear the room TS since we want to start at live again on refresh
-                  this.props.roomSeek(null, Number.MAX_SAFE_INTEGER);
-                } else {
-                  localSeek();
-                }
-              }}
-              className={`${styles.control} ${styles.action} ${styles.text}`}
-              style={{
-                color: isBehind ? 'gray' : 'red',
-              }}
-            >
-              <Icon size="small" name={'circle'} />
-              LIVE
-            </div>
-          }
         />
         <div className={`${styles.control} ${styles.text}`}>
           {formatTimestamp(currentTime)}
@@ -203,113 +175,13 @@ export class Controls extends React.Component<ControlsProps> {
         <div className={`${styles.control} ${styles.text}`}>
           {formatTimestamp(duration)}
         </div>
-        <div style={{ fontSize: '10px', fontWeight: 700 }}>
-          <Popup
-            content={
-              this.props.roomPlaybackRate === 0
-                ? 'Playing at a dynamic rate to keep you in sync'
-                : 'Playing at a manually selected rate'
-            }
-            trigger={
-              <Icon
-                name="sync alternate"
-                loading={this.props.roomPlaybackRate === 0}
-              />
-            }
-          />
-          {this.props.playbackRate?.toFixed(2)}x
-        </div>
-        {
-          <Dropdown
-            style={{ marginLeft: -8 }}
-            className={`${styles.control}`}
-            disabled={this.props.disabled}
-          >
-            <Dropdown.Menu>
-              {[
-                { key: 'Auto', text: 'Auto', value: 0 },
-                { key: '0.25', text: '0.25x', value: 0.25 },
-                { key: '0.5', text: '0.5x', value: 0.5 },
-                { key: '0.75', text: '0.75x', value: 0.75 },
-                { key: '1', text: '1x', value: 1 },
-                { key: '1.25', text: '1.25x', value: 1.25 },
-                { key: '1.5', text: '1.5x', value: 1.5 },
-                { key: '1.75', text: '1.75x', value: 1.75 },
-                { key: '2', text: '2x', value: 2 },
-                { key: '3', text: '3x', value: 3 },
-              ].map((item) => (
-                <Dropdown.Item
-                  key={item.key}
-                  text={item.text}
-                  onClick={() => this.props.roomSetPlaybackRate(item.value)}
-                  active={this.props.roomPlaybackRate === item.value}
-                />
-              ))}
-            </Dropdown.Menu>
-          </Dropdown>
-        }
         <Icon
-          onClick={() => {
-            this.props.roomSetLoop(Boolean(!this.props.loop));
-          }}
-          className={`${styles.control} ${styles.action}`}
-          name={'repeat'}
-          title="Loop"
-          loading={this.props.loop}
-          disabled={this.props.disabled}
-        />
-        {this.props.isYouTube ? (
-          <Dropdown
-            icon="closed captioning outline large"
-            className={`${styles.control}`}
-          >
-            <Dropdown.Menu>
-              {[
-                { key: 'hidden', text: 'Off', value: 'hidden' },
-                { key: 'en', text: 'English', value: 'showing' },
-                { key: 'es', text: 'Spanish', value: 'showing' },
-              ].map((item) => (
-                <Dropdown.Item
-                  key={item.key}
-                  text={item.text}
-                  onClick={() =>
-                    this.props.localSetSubtitleMode(
-                      item.value as TextTrackMode,
-                      item.key
-                    )
-                  }
-                />
-              ))}
-            </Dropdown.Menu>
-          </Dropdown>
-        ) : (
-          <Icon
-            size="large"
-            onClick={() => {
-              localSubtitleModal();
-            }}
-            className={`${styles.control} ${styles.action}`}
-            name={subtitled ? 'closed captioning' : 'closed captioning outline'}
-            title="Captions"
-          />
-        )}
-        <Icon
-          size="large"
-          onClick={() => localFullScreen(false)}
-          className={`${styles.control} ${styles.action}`}
-          style={{ transform: 'rotate(90deg)' }}
-          name="window maximize outline"
-          title="Theater Mode"
-        />
-        <Icon
-          size="large"
           onClick={() => localFullScreen(true)}
           className={`${styles.control} ${styles.action}`}
           name="expand"
           title="Fullscreen"
         />
         <Icon
-          size="large"
           onClick={() => {
             localToggleMute();
           }}
