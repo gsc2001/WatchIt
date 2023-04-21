@@ -46,7 +46,9 @@ export class ComboBox extends React.Component<ComboBoxProps> {
       () => this.setState({ inputMedia: undefined, results: undefined }),
       200
     );
+    console.log(data);
     this.props.roomSetMedia(e, data);
+    console.log(this.props.roomMedia);
   };
 
   doSearch = async (e: any) => {

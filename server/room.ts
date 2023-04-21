@@ -112,6 +112,7 @@ export class Room {
       next();
     });
     io.of(roomId).on('connection', (socket: Socket) => {
+      console.log('server socket connected');
       const clientId = socket.handshake.query?.clientId as string;
       this.clientIdMap[socket.id] = clientId;
       this.roster.push({ id: socket.id, clientId });
@@ -372,6 +373,7 @@ export class Room {
     this.tsMap = {};
     this.nextVotes = {};
     this.preventTSUpdate = true;
+    console.log('data in cmd host' + data);
     setTimeout(() => (this.preventTSUpdate = false), 1000);
     this.io.of(this.roomId).emit('REC:tsMap', this.tsMap);
     this.io.of(this.roomId).emit('REC:host', this.getHostState());
@@ -476,57 +478,10 @@ export class Room {
       // Can't update the video while someone is screensharing/filesharing or vbrowser is running
       return;
     }
-    redisCount('urlStarts');
+    // redisCount('urlStarts');
     // If a reddit URL, extract video URL
-    if (
-      data.startsWith('https://www.reddit.com') ||
-      data.startsWith('https://old.reddit.com') ||
-      data.startsWith('https://reddit.com')
-    ) {
-      if (data.endsWith('/')) {
-        // Remove trailing slash
-        data = data.slice(0, -1);
-      }
-      data = data + '.json';
-      // Extract fallback_url
-      const resp = await axios.get(data);
-      const json = resp.data;
-      let reddit_m3u8 =
-        json?.[0]?.data?.children?.[0]?.data?.secure_media?.reddit_video
-          ?.hls_url;
-      let reddit_mp4 =
-        json?.[0]?.data?.children?.[0]?.data?.secure_media?.reddit_video
-          ?.fallback_url;
-      // prefer reddit m3u8 streams over the mp4 links as the m3u8 streams contain audio.
-      data = reddit_m3u8 || reddit_mp4 || data;
-    } else if (
-      data.startsWith('https://www.twitch.tv') ||
-      data.startsWith('https://twitch.tv')
-    ) {
-      try {
-        // Extract m3u8 data
-        // Note this won't work directly since Twitch will reject requests from the wrong origin--need to proxy the m3u8 playlist
-        const channel = data.split('/').slice(-1)[0];
-        const isStream = isNaN(Number(channel));
-        let streams = [];
-        if (isStream) {
-          streams = await twitch.getStream(channel);
-        } else {
-          streams = await twitch.getVod(channel);
-        }
-        const parsed = new URL(streams?.[0].url);
-        data =
-          config.TWITCH_PROXY_PATH +
-          '/proxy' +
-          parsed.pathname +
-          '?host=' +
-          parsed.host +
-          '&displayName=' +
-          data;
-      } catch (e) {
-        console.warn(e);
-      }
-    }
+
+    console.log('reached in starthosting after basic checks');
     this.cmdHost(socket, data);
   };
 

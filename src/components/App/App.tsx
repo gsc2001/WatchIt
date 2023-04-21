@@ -147,7 +147,7 @@ interface AppState {
 export default class App extends React.Component<AppProps, AppState> {
   state: AppState = {
     state: 'starting',
-    roomMedia: 'https://www.youtube.com/watch?v=Auw2na7LuSo',
+    roomMedia: '',
     roomPaused: false,
     roomSubtitle: '',
     roomLoop: false,
@@ -294,6 +294,7 @@ export default class App extends React.Component<AppProps, AppState> {
     });
     this.socket = socket;
     socket.on('connect', async () => {
+      console.log('client connected');
       this.setState({
         state: 'connected',
         overlayMsg: '',
@@ -365,6 +366,74 @@ export default class App extends React.Component<AppProps, AppState> {
     });
     socket.on('REC:changeController', (data: string) => {
       this.setState({ controller: data });
+    });
+    socket.on('REC:host', async (data: HostState) => {
+      let currentMedia = data.video || '';
+      this.setState(
+        {
+          roomMedia: currentMedia,
+          roomPaused: data.paused,
+          roomSubtitle: data.subtitle,
+          roomLoop: data.loop,
+          roomPlaybackRate: data.playbackRate,
+          loading: Boolean(data.video),
+          nonPlayableMedia: false,
+          controller: data.controller,
+          isLiveHls: false,
+        },
+        async () => {
+          const leftVideo = this.HTMLInterface.getVideoEl();
+
+          // Stop all players
+          // Unless the user is sharing a file, because we play it in leftVideo and capture stream
+          if (!this.isLocalStreamAFile) {
+            this.HTMLInterface.pauseVideo();
+          }
+          this.YouTubeInterface.stopVideo();
+
+          if (!this.isLocalStreamAFile) {
+            this.Player().clearState();
+          }
+          if (data.subtitle) {
+            this.Player().loadSubtitles(data.subtitle);
+          }
+          if (data.playbackRate) {
+            this.Player().setPlaybackRate(data.playbackRate);
+          }
+
+          if (this.usingYoutube() && !this.YouTubeInterface.isReady()) {
+            console.log(
+              'YT player not ready, onReady callback will retry when it is'
+            );
+            return;
+          }
+          const src = data.video;
+          const time = data.videoTS;
+          await this.Player().setSrcAndTime(src, time);
+          // Start this video
+          if (!data.paused) {
+            this.localPlay();
+          }
+          // One time, when we're ready to play
+          leftVideo?.addEventListener(
+            'canplay',
+            () => {
+              this.setLoadingFalse();
+              this.localSeek(this.state.isLiveHls ? data.videoTS : undefined);
+              if (data.playbackRate) {
+                // Set playback rate again since it might have been lost
+                console.log('setting playback rate again', data.playbackRate);
+                this.Player().setPlaybackRate(data.playbackRate);
+              }
+            },
+            { once: true }
+          );
+
+          // Progress updater
+          window.clearInterval(this.progressUpdater);
+          this.setState({ downloaded: 0, total: 0, speed: 0 });
+        }
+      );
     });
     socket.on('REC:chat', (data: ChatMessage) => {
       if (
@@ -1157,6 +1226,7 @@ export default class App extends React.Component<AppProps, AppState> {
   };
 
   roomSetMedia = (_e: any, data: DropdownProps) => {
+    console.log('data in set func:' + data.value);
     this.socket.emit('CMD:host', data.value);
   };
 
