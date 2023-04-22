@@ -59,7 +59,7 @@ class Room {
             console.log('client joined room: ', this.roomId, socket.id);
             this.avatarIdMap[socket.id] = (this.roster.length % 7) + 1;
             this.roster.push({ clientId, socketId: socket.id });
-
+            this.tsMap[socket.id] = this.videoTS;
             socket.emit('REC:host', this.getState());
             socket.emit('REC:leaderTime', this.videoTS);
             socket.emit('REC:chatinit', this.chatMsgs);
