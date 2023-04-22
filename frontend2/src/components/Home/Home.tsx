@@ -1,8 +1,9 @@
 import React from 'react';
 
 import { Divider, Header, Icon, SemanticICONS, Step } from 'semantic-ui-react';
+import { JoinRoomButton } from '../Buttons/JoinRoomButton';
 
-import { NewRoomButton } from '../TopBar';
+import { NewRoomButton } from '../Buttons';
 import styles from './Home.module.css';
 import CustomizedSteppers from './Steps'
 
@@ -17,6 +18,9 @@ export const Home = () => {
                         <>
                             <div style={{ marginTop: '8px', width: '300px' }}>
                                 <NewRoomButton size="huge" />
+                            </div>
+                            <div style={{ marginTop: '8px', width: '300px' }}>
+                                <JoinRoomButton />
                             </div>
                         </>
                     }

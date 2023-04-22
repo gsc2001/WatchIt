@@ -8,7 +8,6 @@ import App from './components/App';
 import { Home } from './components/Home';
 import { TopBar } from './components/TopBar/TopBar';
 import * as serviceWorker from './serviceWorker';
-import { Create } from './components/Create/Create';
 import 'semantic-ui-css/semantic.min.css';
 
 const Debug = lazy(() => import('./components/Debug/Debug'));
@@ -50,13 +49,6 @@ class WatchParty extends React.Component {
                 <Home />
               </React.Fragment>
             );
-          }}
-        />
-        <Route
-          path="/create"
-          exact
-          render={() => {
-            return <Create />;
           }}
         />
         <Route

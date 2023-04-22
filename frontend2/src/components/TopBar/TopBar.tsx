@@ -1,63 +1,9 @@
 import React from 'react';
-import { serverPath, colorMappings } from '../../utils';
-import { Icon, Popup, Button, SemanticSIZES } from 'semantic-ui-react';
+import { colorMappings } from '../../utils';
+import { Icon } from 'semantic-ui-react';
 // import 'firebase/compat/auth';
-import { InviteButton } from '../InviteButton/InviteButton';
+import { InviteButton, NewRoomButton } from '../Buttons';
 import appStyles from '../App/App.module.css';
-
-export async function createRoom(
-    openNewTab: boolean | undefined,
-    video: string = ''
-) {
-    const response = await window.fetch(serverPath + '/createRoom', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            video,
-        }),
-    });
-    const data = await response.json();
-    const { name } = data;
-    console.log(name);
-
-    if (openNewTab) {
-        window.open('/watch/' + name);
-    } else {
-        window.location.assign('/watch/' + name);
-    }
-}
-
-export class NewRoomButton extends React.Component<{
-    size?: SemanticSIZES;
-    openNewTab?: boolean;
-}> {
-    createRoom = async () => {
-        await createRoom(this.props.openNewTab);
-    };
-    render() {
-        return (
-            <Popup
-                content="Create a new room with a random URL that you can share with friends"
-                trigger={
-                    <Button
-                        color="blue"
-                        size={this.props.size}
-                        icon
-                        labelPosition="left"
-                        onClick={this.createRoom}
-                        className={this.props.size ? '' : 'toolButton'}
-                        fluid
-                    >
-                        <Icon name="certificate" />
-                        New Room
-                    </Button>
-                }
-            />
-        );
-    }
-}
 
 export class TopBar extends React.Component<{
     hideNewRoom?: boolean;

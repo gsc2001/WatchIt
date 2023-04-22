@@ -4,19 +4,17 @@ import {
     Icon,
     Popup,
     Button,
-    SemanticSIZES,
     Modal,
     Header,
     Form,
     Input,
-    Radio,
     Checkbox,
 } from 'semantic-ui-react';
 
-export const JoinModal = ({
-    closeJoinModal,
+const JoinRoomModal = ({
+    closeJoinRoomModal,
 }: {
-    closeJoinModal: () => void;
+    closeJoinRoomModal: () => void;
 }) => {
     const joinRoom = async () => {
         //   const response = await window.fetch(serverPath + '/createRoom', {
@@ -35,8 +33,9 @@ export const JoinModal = ({
         //   } else {
         //     window.location.assign('/watch' + name);
         //   }
+        console.log(name, roomCode, passcode);
         console.log('Send request to join rooom!');
-        closeJoinModal();
+        closeJoinRoomModal();
     };
 
     const [name, setName] = useState('');
@@ -45,44 +44,60 @@ export const JoinModal = ({
     const [passcodeToggle, setPasscodeToggle] = useState(false);
 
     return (
-        <Modal open centered={false} size="tiny" onClose={closeJoinModal}>
-            <Modal.Header as="h3">Join Room</Modal.Header>
+        <Modal open centered={false} size="tiny" onClose={closeJoinRoomModal}>
+            <Modal.Header as="h3">
+                <center>Join Room</center>
+            </Modal.Header>
             <Modal.Content>
-                <Header as="h5">Copy and share this link:</Header>
+                {/* <Header as="h5">Copy and share this link:</Header> */}
                 <Form>
                     <Form.Field>
                         <Form.Input
                             onChange={e => setName(e.target.value)}
+                            // actionPosition="left"
                             value={name}
+                            action={{
+                                content: 'Name',
+                            }}
                         />
                     </Form.Field>
                     <Form.Field>
                         <Form.Input
+                            // actionPosition="left"
                             onChange={e => setRoomCode(e.target.value)}
                             value={roomCode}
+                            action={{
+                                content: 'Room code',
+                            }}
                         />
                     </Form.Field>
                     <Form.Field>
                         <Checkbox
-                            label="Check this box"
+                            label="Private Room"
                             onChange={(e, data) =>
                                 setPasscodeToggle(data.checked ? true : false)
                             }
                             checked={passcodeToggle}
                         />
                     </Form.Field>
-                    <Form.Field>
-                        <Input
-                            onChange={e => setPasscode(e.target.value)}
-                            action={{
-                                labelPosition: 'left',
-                                content: 'Room code',
-                            }}
-                        />
-                    </Form.Field>
-                    <Button type="submit" onClick={joinRoom}>
-                        Submit
-                    </Button>
+                    {passcodeToggle ? (
+                        <Form.Field>
+                            <Form.Input
+                                // label="Passcode"
+                                value={passcode}
+                                onChange={e => setPasscode(e.target.value)}
+                                action={{
+                                    content: 'Passcode',
+                                }}
+                                // actionPosition="left"
+                            />
+                        </Form.Field>
+                    ) : null}
+                    <center>
+                        <Button type="submit" onClick={joinRoom}>
+                            Submit
+                        </Button>
+                    </center>
                 </Form>
             </Modal.Content>
         </Modal>
@@ -95,7 +110,9 @@ export const JoinRoomButton = () => {
     return (
         <>
             {joinRoomModalOpen && (
-                <JoinModal closeJoinModal={() => setJoinRoomModalOpen(false)} />
+                <JoinRoomModal
+                    closeJoinRoomModal={() => setJoinRoomModalOpen(false)}
+                />
             )}
             <Popup
                 content="Join Room"
@@ -105,12 +122,12 @@ export const JoinRoomButton = () => {
                         icon
                         labelPosition="left"
                         fluid
-                        className="toolButton"
+                        size="huge"
                         style={{ minWidth: '12em' }}
                         onClick={() => setJoinRoomModalOpen(true)}
                     >
                         <Icon name="certificate" />
-                        Invite Friends
+                        Join Room
                     </Button>
                 }
             />
