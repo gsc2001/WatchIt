@@ -1171,34 +1171,15 @@ export default class App extends React.Component<AppProps, AppState> {
         const controls = (
             <Controls
                 key={this.state.controlsTimestamp}
-                beta={this.props.beta}
                 paused={this.state.roomPaused}
-                roomPlaybackRate={this.state.roomPlaybackRate}
-                isLiveHls={this.state.isLiveHls}
-                muted={this.Player().isMuted()}
-                volume={this.Player().getVolume()}
-                subtitled={this.Player().isSubtitled()}
                 currentTime={this.Player().getCurrentTime()}
                 duration={this.Player().getDuration()}
-                leaderTime={this.state.leaderTime}
-                playbackRate={this.Player().getPlaybackRate()}
-                isYouTube={this.usingYoutube()}
-                timeRanges={this.Player().getTimeRanges()}
-                loop={this.state.roomLoop}
-                roomSetLoop={this.roomSetLoop}
                 roomTogglePlay={this.roomTogglePlay}
                 roomSeek={this.roomSeek}
-                roomSetPlaybackRate={this.roomSetPlaybackRate}
-                localFullScreen={this.localFullScreen}
-                localToggleMute={this.localToggleMute}
-                localSubtitleModal={this.localSubtitleModal}
-                localSetVolume={this.localSetVolume}
-                localSeek={this.localSeek}
-                localSetSubtitleMode={this.Player().setSubtitleMode}
             />
         );
         const displayRightContent =
-            this.state.showRightBar || this.state.fullScreen;
+            this.state.showRightBar;
         const rightBar = (
             <Grid.Column
                 width={displayRightContent ? 4 : 1}
@@ -1304,22 +1285,8 @@ export default class App extends React.Component<AppProps, AppState> {
                                         <React.Fragment>
                                             <ComboBox
                                                 roomSetMedia={this.roomSetMedia}
-                                                playlistAdd={
-                                                    this.roomPlaylistAdd
-                                                }
-                                                playlistDelete={
-                                                    this.roomPlaylistDelete
-                                                }
-                                                playlistMove={
-                                                    this.roomPlaylistMove
-                                                }
                                                 roomMedia={this.state.roomMedia}
-                                                getMediaDisplayName={
-                                                    this.getMediaDisplayName
-                                                }
-                                                launchMultiSelect={
-                                                    this.launchMultiSelect
-                                                }
+                                                
                                                 streamPath={
                                                     this.props.streamPath
                                                 }
@@ -1393,16 +1360,6 @@ export default class App extends React.Component<AppProps, AppState> {
                                                     }}
                                                 >
                                                     {!this.state.loading &&
-                                                        !this.state
-                                                            .roomMedia && (
-                                                            <Message
-                                                                color="yellow"
-                                                                icon="hand point up"
-                                                                header="You're not watching anything!"
-                                                                content="Pick something to watch above."
-                                                            />
-                                                        )}
-                                                    {!this.state.loading &&
                                                         this.state
                                                             .nonPlayableMedia && (
                                                             <Message
@@ -1443,15 +1400,6 @@ export default class App extends React.Component<AppProps, AppState> {
                                                 marginTop: -10,
                                             }}
                                         >
-                                            {/* <Progress
-                        size="tiny"
-                        color="green"
-                        inverted
-                        value={this.state.downloaded}
-                        total={this.state.total}
-                        // indicating
-                        label={}
-                      ></Progress> */}
                                             {Math.min(
                                                 (this.state.downloaded /
                                                     this.state.total) *
@@ -1466,29 +1414,7 @@ export default class App extends React.Component<AppProps, AppState> {
                                         </div>
                                     )}
                                 </div>
-                                {!isMobile() && (
-                                    <Button
-                                        style={{
-                                            position: 'absolute',
-                                            top: '50%',
-                                            right: 'calc(0% - 18px)',
-                                            zIndex: 900,
-                                        }}
-                                        circular
-                                        size="mini"
-                                        icon={
-                                            this.state.showRightBar
-                                                ? 'angle right'
-                                                : 'angle left'
-                                        }
-                                        onClick={() =>
-                                            this.setState({
-                                                showRightBar:
-                                                    !this.state.showRightBar,
-                                            })
-                                        }
-                                    />
-                                )}
+                                
                             </Grid.Column>
                             {rightBar}
                         </Grid.Row>

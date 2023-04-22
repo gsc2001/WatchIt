@@ -352,25 +352,13 @@ const ChatMessage = ({
                 <Comment.Text className={styles.light + ' ' + styles.system}>
                     {cmd && formatMessage(cmd, msg)}
                 </Comment.Text>
-                <Linkify
-                    componentDecorator={(
-                        decoratedHref: string,
-                        decoratedText: string,
-                        key: string
-                    ) => (
-                        <SecureLink href={decoratedHref} key={key}>
-                            {decoratedText}
-                        </SecureLink>
-                    )}
-                >
-                    <Comment.Text
+                <Comment.Text
                         className={`${styles.light} ${
                             isEmojiString(msg) ? styles.emoji : ''
                         }`}
                     >
                         {!cmd && msg}
                     </Comment.Text>
-                </Linkify>
             </Comment.Content>
         </Comment>
     );
