@@ -1069,8 +1069,8 @@ export default class App extends React.Component<AppProps, AppState> {
         this.localSetMute(!this.Player().isMuted());
     };
 
-    roomSetMedia = (_e: any, data: DropdownProps) => {
-        console.log('data in set func:' + data.value);
+    roomSetMedia = (data: DropdownProps) => {
+        console.log('data in set func:' ,data);
         this.socket.emit('CMD:host', data.value);
     };
 
@@ -1157,7 +1157,7 @@ export default class App extends React.Component<AppProps, AppState> {
                 /&fileIndex=(\d+)$/,
                 `&fileIndex=${nextNum}`
             );
-            this.roomSetMedia(null, { value: nextUrl });
+            this.roomSetMedia({ value: nextUrl });
         }
     };
 
