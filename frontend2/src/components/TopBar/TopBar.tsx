@@ -87,24 +87,13 @@ export class TopBar extends React.Component<{
                             style={{
                                 height: '48px',
                                 width: '48px',
-                                marginRight: '10px',
-                                borderRadius: '50%',
+                                // marginRight: '10px',
+                                // borderRadius: '50%',
                                 position: 'relative',
-                                backgroundColor: '#' + colorMappings.blue,
+                                // backgroundColor: '#' + colorMappings.red,
                             }}
                         >
-                            <Icon
-                                inverted
-                                name="film"
-                                size="large"
-                                style={{
-                                    // position: 'absolute',
-                                    top: 14,
-                                    width: '100%',
-                                    textAlign: 'center',
-                                    padding: "auto",
-                                }}
-                            />
+                        <img src='/popcorn.png' alt="logo" style={{marginTop: "3px", marginLeft: "3px", width: '80%', height: '80%', padding: "1px"}}/>
                         </div>
                     </a>
                     {this.props.roomTitle || this.props.roomDescription ? (
@@ -149,9 +138,10 @@ export class TopBar extends React.Component<{
                                         style={{
                                             textTransform: 'uppercase',
                                             fontWeight: 700,
-                                            color: '#2185d0',
+                                            color: '#e94057',
                                             fontSize: '30px',
                                             lineHeight: '30px',
+                                            fontFamily: 'monospace',
                                         }}
                                     >
                                         Watch
@@ -160,13 +150,14 @@ export class TopBar extends React.Component<{
                                         style={{
                                             textTransform: 'uppercase',
                                             fontWeight: 700,
-                                            color: '#21ba45',
+                                            color: '#e6e6e6',
                                             fontSize: '30px',
                                             lineHeight: '30px',
-                                            marginLeft: 'auto',
+                                            marginLeft: '2px',
+                                            fontFamily: 'monospace',
                                         }}
                                     >
-                                        Party
+                                        It
                                     </div>
                                 </div>
                             </a>
