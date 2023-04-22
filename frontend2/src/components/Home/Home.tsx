@@ -4,6 +4,7 @@ import { Divider, Header, Icon, SemanticICONS, Step } from 'semantic-ui-react';
 
 import { NewRoomButton } from '../TopBar';
 import styles from './Home.module.css';
+import CustomizedSteppers from './Steps'
 
 export const Home = () => {
     return (
@@ -31,9 +32,9 @@ export const Home = () => {
                         alignItems: 'center',
                     }}
                 >
-                    <div className={styles.heroText}>Get started!</div>
                     <div className={styles.featureSection}>
-                        <Step.Group style={{ margin: '8px' }}>
+                    <CustomizedSteppers/>
+                        {/* <Step.Group style={{ margin: '8px' }}>
                             <Step>
                                 <Icon name="certificate" />
                                 <Step.Content>
@@ -69,7 +70,7 @@ export const Home = () => {
                                     </Step.Description>
                                 </Step.Content>
                             </Step>
-                        </Step.Group>
+                        </Step.Group> */}
                     </div>
                 </div>
             </div>
