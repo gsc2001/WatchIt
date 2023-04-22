@@ -212,7 +212,6 @@ const ChatMessage = ({
                         width: '3em',
                         height: '3em',
                         marginLeft: '1em',
-                        borderRadius: '50px'
                     }}
                 />
                 <div style={{flex: 1}}>
@@ -234,6 +233,9 @@ const ChatMessage = ({
                             className={`${styles.light} ${
                                 isEmojiString(msg) ? styles.emoji : ''
                             }`}
+                            style={{
+                                marginRight: '1.3em',
+                            }}
                         >
                             {!cmd && msg}
                         </Comment.Text>
