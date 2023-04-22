@@ -39,6 +39,7 @@
         "react-colorful": "^5.6.1",
         "react-dom": "^18.2.0",
         "react-google-recaptcha-v3": "^1.10.1",
+        "react-hot-toast": "^2.4.0",
         "react-linkify": "^1.0.0-alpha",
         "react-markdown": "^8.0.5",
         "react-onclickoutside": "^6.12.2",

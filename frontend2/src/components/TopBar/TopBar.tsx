@@ -69,6 +69,7 @@ export class TopBar extends React.Component<{
     roomDescription?: string;
     roomTitleColor?: string;
     showInviteButton?: boolean;
+    
 }> {
     render() {
         return (

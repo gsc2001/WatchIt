@@ -396,13 +396,7 @@ export default class App extends React.Component<AppProps, AppState> {
             );
         });
         socket.on('REC:chatMsg', (data: ChatMessage) => {
-            if (
-                (document.visibilityState &&
-                    document.visibilityState !== 'visible') ||
-                this.state.currentTab !== 'chat'
-            ) {
-                new Audio('/clearly.mp3').play();
-            }
+            console.log(data)
             this.state.chat.push(data);
             this.setState({
                 chat: this.state.chat,

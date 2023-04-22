@@ -3,6 +3,7 @@ import './index.css';
 import React, { lazy, Suspense } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter, Route } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
 
 import App from './components/App';
 import { Home } from './components/Home';
@@ -23,6 +24,7 @@ class WatchParty extends React.Component {
         return (
             // <React.StrictMode>
             <BrowserRouter>
+            <Toaster />
                 <Route
                     path="/"
                     exact
@@ -51,6 +53,7 @@ class WatchParty extends React.Component {
                         );
                     }}
                 />
+            
             </BrowserRouter>
             // </React.StrictMode>
         );
