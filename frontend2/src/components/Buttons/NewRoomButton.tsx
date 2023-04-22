@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { useState, useEffect } from 'react';
 
 import {
@@ -9,40 +10,42 @@ import {
     Form,
     Checkbox,
 } from 'semantic-ui-react';
+import { serverPath } from '../../utils';
+import { savePasscode } from '../../utils/passcode';
 
 const NewRoomModal = ({
     closeNewRoomModal,
 }: {
     closeNewRoomModal: () => void;
 }) => {
-    const createRoom = async (
-        openNewTab: boolean | undefined
-        // video: string = ''
-    ) => {
-        localStorage.setItem('watchit_username', JSON.stringify(name));
-        const roomcode = '123-456'; // Get it from backend
-        //   const response = await window.fetch(serverPath + '/createRoom', {
-        //     method: 'POST',
-        //     headers: {
-        //       'Content-Type': 'application/json',
-        //     },
-        //     body: JSON.stringify({
-        //       video,
-        //     }),
-        //   });
-        //   const data = await response.json();
-        //   const { name } = data;
-        if (openNewTab) {
-            window.open('/watch/' + roomcode);
-        } else {
-            window.location.assign('/watch/' + roomcode);
-        }
-        closeNewRoomModal();
-    };
-
     const [name, setName] = useState('');
     const [isPrivate, setIsPrivate] = useState(false);
-    const [passCode, setPassCode] = useState('');
+    const [passcode, setPassCode] = useState('');
+
+    const createRoom = async (openNewTab: boolean | undefined) => {
+        localStorage.setItem('watchit_username', JSON.stringify(name));
+
+        const roomData = {
+            passcode,
+        };
+        console.log(roomData, name);
+        try {
+            const response = await axios.post(
+                serverPath + '/createRoom',
+                roomData
+            );
+            const roomId = response.data.roomId;
+            savePasscode(roomId, passcode);
+            if (openNewTab) {
+                window.open('/watch/' + roomId);
+            } else {
+                window.location.assign('/watch/' + roomId);
+            }
+            closeNewRoomModal();
+        } catch (e) {
+            console.error(e);
+        }
+    };
 
     useEffect(() => {
         const name = localStorage.getItem('watchit_username');
@@ -65,7 +68,7 @@ const NewRoomModal = ({
                             // actionPosition="left"
                             value={name}
                             action={{
-                                content: 'Name',
+                                content: 'Your Name',
                             }}
                         />
                     </Form.Field>
@@ -82,13 +85,12 @@ const NewRoomModal = ({
                     {isPrivate ? (
                         <Form.Field>
                             <Form.Input
-                                // label="Passcode"
-                                value={passCode}
+                                type="password"
+                                value={passcode}
                                 onChange={e => setPassCode(e.target.value)}
                                 action={{
                                     content: 'Passcode',
                                 }}
-                                // actionPosition="left"
                             />
                         </Form.Field>
                     ) : null}
@@ -121,7 +123,7 @@ export const NewRoomButton = (props: {
                     closeNewRoomModal={() => setNewRoomModalOpen(false)}
                 />
             )}
-            
+
             <Button
                 size={props.size}
                 icon
@@ -131,15 +133,15 @@ export const NewRoomButton = (props: {
                 fluid
                 style={{
                     color: 'white',
-                    backgroundImage: 'linear-gradient( 95deg,rgb(138,35,135) 0%,rgb(233,64,87) 50%,rgb(242,113,33) 100%)',
+                    backgroundImage:
+                        'linear-gradient( 95deg,rgb(138,35,135) 0%,rgb(233,64,87) 50%,rgb(242,113,33) 100%)',
                     boxShadow: '0 4px 10px 0 rgba(0,0,0,.25)',
                     borderRadius: '50px',
-                    }}
+                }}
             >
                 <Icon name="plus" />
                 New Room
             </Button>
-              
         </>
     );
 };

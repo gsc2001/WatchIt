@@ -7,6 +7,7 @@ const { Server } = require('socket.io');
 const { generateRandomCode } = require('./utils/general');
 
 const app = express();
+app.use(express.json());
 const server = http.createServer(app);
 
 const io = new Server(server, { transports: ['websocket'] });
@@ -18,7 +19,7 @@ io.on('disconnect', socket => {
 });
 
 const rooms = new Map();
-rooms.set('012345', new Room(io,'012345'));
+rooms.set('012345', new Room(io, '012345'));
 
 app.get('/ping', async (req, res) => {
     res.json({ success: true, server_time: Date.now() });
@@ -30,19 +31,20 @@ app.post('/createRoom', async (req, res) => {
     do {
         roomId = generateRandomCode(config.CODE_LENGTH);
     } while (rooms.has(roomId));
+    // console.log(req.body);
 
-    const room = new Room(io, roomId);
+    const room = new Room(io, roomId, req.body.passcode);
     rooms.set(roomId, room);
     console.log('Created room: ', roomId);
 
-    res.json({ name: roomId });
+    res.json({ roomId });
 });
 
 app.get('/checkRoom/:roomId', async (req, res) => {
     const roomId = req.params.roomId;
 
     if (rooms.has(roomId)) {
-        res.json({ roomId });
+        res.json({ roomId, isPrivate: rooms.get(roomId).passcode !== '' });
     } else {
         res.json({});
     }

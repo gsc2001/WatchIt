@@ -16,7 +16,8 @@ import { Chat } from '../Chat';
 import { ComboBox } from '../ComboBox/ComboBox';
 import { Controls } from '../Controls/Controls';
 import { ErrorModal } from '../Modal/ErrorModal';
-import { PasswordModal } from '../Modal/PasswordModal';
+import { NamePasscodeModal } from '../Modal/NamePasscodeModal';
+import { getSavedPasscode } from '../../utils/passcode';
 import { TopBar } from '../TopBar';
 import styles from './App.module.css';
 import { HTML } from './HTML';
@@ -106,6 +107,8 @@ interface AppState {
     mediaPath: string | undefined;
     roomPlaybackRate: number;
     isLiveHls: boolean;
+    isNameSet: boolean;
+    isPrivate: boolean;
 }
 
 export default class App extends React.Component<AppProps, AppState> {
@@ -162,6 +165,8 @@ export default class App extends React.Component<AppProps, AppState> {
         mediaPath: undefined,
         roomPlaybackRate: 0,
         isLiveHls: false,
+        isNameSet: false,
+        isPrivate: false,
     };
     socket: Socket = null as any;
     mediasoupPubSocket: Socket | null = null;
@@ -212,11 +217,14 @@ export default class App extends React.Component<AppProps, AppState> {
 
     init = async () => {
         let roomId = this.props.urlRoomId;
+        let isPrivate = false;
         // if a vanity name, resolve the url to a room id
         try {
             const res = await axios.get(serverPath + '/checkRoom/' + roomId);
+            console.log('checkRoom', res.data);
             if (res.data.roomId) {
                 roomId = res.data.roomId as string;
+                isPrivate = res.data.isPrivate as boolean;
             } else {
                 this.setState({ overlayMsg: "Couldn't load this room." });
                 return;
@@ -226,30 +234,18 @@ export default class App extends React.Component<AppProps, AppState> {
             this.setState({ overlayMsg: "Couldn't load this room." });
             return;
         }
-        this.setState({ roomId }, () => {
+        this.setState({ roomId, isPrivate }, () => {
             this.join(roomId as string);
         });
     };
 
     join = async (roomId: string) => {
-        let password = '';
-        try {
-            const savedPasswordsString = window.localStorage.getItem(
-                'watchparty-passwords'
-            );
-            const savedPasswords = JSON.parse(savedPasswordsString || '{}');
-            this.setState({ savedPasswords });
-            password = savedPasswords[roomId] || '';
-        } catch (e) {
-            console.warn('[ALERT] Could not parse saved passwords');
-        }
-        // const response = await axios.get(serverPath + '/resolveShard' + roomId);
-        // const shard = Number(response.data) ?? '';
+        const passcode = getSavedPasscode(roomId);
         const socket = io(ioPath + roomId, {
             transports: ['websocket'],
             query: {
                 clientId: getAndSaveClientId(),
-                password,
+                passcode,
             },
         });
         this.socket = socket;
@@ -264,11 +260,14 @@ export default class App extends React.Component<AppProps, AppState> {
             });
             // Load username from localstorage
             let userName =
-                window.localStorage.getItem('watchparty-username') || '';
-            if (!userName) {
-                userName = await generateName();
+                window.localStorage.getItem('watchit_username') || '';
+            if (userName) {
+                this.setState({ isNameSet: true });
+            } else {
+                this.setState({ isNameSet: false });
             }
-            console.log(userName);
+            console.log('username', userName);
+            console.log('isNameSet', this.state.isNameSet);
             this.updateName(null, { value: userName });
         });
         socket.on('connect_error', (err: any) => {
@@ -277,8 +276,6 @@ export default class App extends React.Component<AppProps, AppState> {
                 this.setState({ overlayMsg: "Couldn't load this room." });
             } else if (err.message === 'not authorized') {
                 this.setState({ isErrorAuth: true });
-            } else if (err.message === 'room full') {
-                this.setState({ overlayMsg: 'This room is full.' });
             }
         });
         socket.on('disconnect', reason => {
@@ -546,7 +543,6 @@ export default class App extends React.Component<AppProps, AppState> {
         return !this.usingYoutube();
     };
 
-
     localSeek = (customTime?: number) => {
         // Jump to the leader's position, or a custom one
         let target = customTime ?? this.state.leaderTime;
@@ -675,11 +671,11 @@ export default class App extends React.Component<AppProps, AppState> {
             'theaterContainer'
         ) as HTMLElement;
         if (bVideoOnly) {
-                // Can't really control the VBrowser on mobile anyway, so just fullscreen the video
-                // https://github.com/howardchung/watchparty/issues/208
-                container = document.getElementById(
-                    'leftVideoParent'
-                ) as HTMLElement;
+            // Can't really control the VBrowser on mobile anyway, so just fullscreen the video
+            // https://github.com/howardchung/watchparty/issues/208
+            container = document.getElementById(
+                'leftVideoParent'
+            ) as HTMLElement;
         }
         if (
             !container.requestFullscreen &&
@@ -725,7 +721,7 @@ export default class App extends React.Component<AppProps, AppState> {
         console.log(data.value);
         this.setState({ myName: data.value });
         this.socket.emit('CMD:name', data.value);
-        window.localStorage.setItem('watchparty-username', data.value);
+        window.localStorage.setItem('watchit_username', data.value);
     };
 
     setLoadingFalse = () => {
@@ -806,10 +802,10 @@ export default class App extends React.Component<AppProps, AppState> {
                 {this.state.overlayMsg && (
                     <ErrorModal error={this.state.overlayMsg} />
                 )}
-                {this.state.isErrorAuth && (
-                    <PasswordModal
-                        savedPasswords={this.state.savedPasswords}
+                {(this.state.isErrorAuth || !this.state.isNameSet) && (
+                    <NamePasscodeModal
                         roomId={this.state.roomId}
+                        isPrivate={this.state.isPrivate}
                     />
                 )}
                 {this.state.errorMessage && (

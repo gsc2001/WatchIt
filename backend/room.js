@@ -6,7 +6,7 @@
  */
 const { Server } = require('socket.io');
 class Room {
-    constructor(io, roomId) {
+    constructor(io, roomId, passcode = '') {
         /** @type{Server}*/
         this.io = io;
         this.roomId = roomId;
@@ -16,6 +16,7 @@ class Room {
         this.lastSync = Date.now();
         this.paused = false;
         this.preventTSUpdate = false;
+        this.passcode = passcode;
 
         this.chatMsgs = [];
 
@@ -44,9 +45,19 @@ class Room {
             }
         }, 1000);
 
+        this.io.of(this.namespace).use(async (socket, next) => {
+            const passcode = socket.handshake.query?.passcode;
+            console.log('checking passcode', passcode, this.passcode);
+            if (this.passcode !== '' && passcode !== this.passcode) {
+                next(new Error('not authorized'));
+                return;
+            }
+            next();
+        });
+
         this.io.of(this.namespace).on('connection', socket => {
             const clientId = socket.handshake.query?.clientId;
-            console.log('client joined room: ', this.roomId);
+            console.log('client joined room: ', this.roomId, socket.id);
             this.roster.push({ clientId, socketId: socket.id });
 
             socket.emit('REC:host', this.getState());
