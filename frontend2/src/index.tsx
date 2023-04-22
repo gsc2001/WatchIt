@@ -53,26 +53,6 @@ class WatchParty extends React.Component {
                         );
                     }}
                 />
-                <Route
-                    path="/r/:vanity"
-                    exact
-                    render={props => {
-                        return (
-                            <App
-                                vanity={props.match.params.vanity}
-                                streamPath={this.state.streamPath}
-                                beta={this.state.beta}
-                            />
-                        );
-                    }}
-                />
-
-                <Route path="/debug">
-                    <TopBar />
-                    <Suspense fallback={null}>
-                        <Debug />
-                    </Suspense>
-                </Route>
             </BrowserRouter>
             // </React.StrictMode>
         );

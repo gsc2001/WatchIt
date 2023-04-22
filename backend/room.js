@@ -79,7 +79,7 @@ class Room {
         setTimeout(() => (this.preventTSUpdate = false), 1000);
 
         this.io.of(this.namespace).emit('REC:host', this.getState());
-        this.io.of(this.namespace).emit('REC:tsMap', this.tsMap);
+        this.io.of(this.namespace).emit('REC:leaderTime', this.videoTS);
     }
     sendChatMessage(socket, message) {
         console.log('got chat message', message);
