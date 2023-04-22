@@ -1,8 +1,6 @@
 import React from 'react';
 import {
-  DropdownProps,
-  Input,
-  Form,
+  DropdownProps, Form, Input
 } from 'semantic-ui-react';
 
 interface ComboBoxProps {

@@ -14,7 +14,7 @@ import { StepIconProps } from '@mui/material/StepIcon';
 
 const ColorlibConnector = styled(StepConnector)(() => ({
   [`&.${stepConnectorClasses.alternativeLabel}`]: {
-    top: 22,
+    top: 38,
   },
   [`& .${stepConnectorClasses.line}`]: {
     height: 3,
@@ -29,8 +29,8 @@ const ColorlibStepIconRoot = styled('div')(({ theme }) => ({
   backgroundColor: theme.palette.mode === 'dark' ? theme.palette.grey[700] : '#ccc',
   zIndex: 1,
   color: '#fff',
-  width: 50,
-  height: 50,
+  width: 80,
+  height: 80,
   display: 'flex',
   borderRadius: '50%',
   justifyContent: 'space-evenly',
@@ -43,10 +43,10 @@ const ColorlibStepIconRoot = styled('div')(({ theme }) => ({
 function ColorlibStepIcon(props: StepIconProps) {
 
   const icons: { [index: string]: React.ReactElement } = {
-    1: <AddCircleIcon />,
-    2: <GroupAddIcon />,
-    3: <VideoLabelIcon />,
-    4: <ThumbUpIcon />,
+    1: <AddCircleIcon fontSize='large' />,
+    2: <GroupAddIcon fontSize='large'/>,
+    3: <VideoLabelIcon fontSize='large' />,
+    4: <ThumbUpIcon fontSize='large' />,
   };
 
   return (
@@ -57,7 +57,7 @@ function ColorlibStepIcon(props: StepIconProps) {
 }
 
 const WhiteTextLabel = styled(StepLabel)({
-  [`& .MuiStepLabel-label`]: {color: "#FFF"}
+  [`& .MuiStepLabel-label`]: {color: "#FFF", fontSize: '1.3em'}
 })
 
 
@@ -65,6 +65,7 @@ const steps = ['Make a room', 'Share Link', 'Pick something to watch', 'Have fun
 
 export default function CustomizedSteppers() {
   return (
+    // <center></center>
       <Stepper sx={{width: "100%"}} alternativeLabel activeStep={-1} connector={<ColorlibConnector />}>
         {steps.map((label) => (
           <Step key={label}>

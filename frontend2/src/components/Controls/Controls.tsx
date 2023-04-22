@@ -84,20 +84,6 @@ export class Controls extends React.Component<ControlsProps> {
           value={currentTime}
           total={duration}
         >
-          {/* {duration < Infinity && this.state.showTimestamp && (
-            <div
-              style={{
-                position: 'absolute',
-                bottom: '0px',
-                left: `calc(${this.state.hoverPos * 100 + '% - 27px'})`,
-                pointerEvents: 'none',
-              }}
-            >
-              <Label basic color="red" pointing="below">
-                <div>{formatTimestamp(this.state.hoverTimestamp)}</div>
-              </Label>
-            </div>
-          )} */}
         </Progress>
         <div className={`${styles.control} ${styles.text}`}>
           {formatTimestamp(duration)}

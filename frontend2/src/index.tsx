@@ -10,8 +10,6 @@ import { TopBar } from './components/TopBar/TopBar';
 import * as serviceWorker from './serviceWorker';
 import 'semantic-ui-css/semantic.min.css';
 
-const Debug = lazy(() => import('./components/Debug/Debug'));
-
 class WatchParty extends React.Component {
     public state = {
         // user: undefined as firebase.User | undefined,

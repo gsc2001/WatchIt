@@ -1,52 +1,26 @@
-import type MediasoupClient from 'mediasoup-client';
 import axios from 'axios';
 import React from 'react';
-import {
-    Button,
-    Dimmer,
-    Dropdown,
-    DropdownProps,
-    Grid,
-    Icon,
-    Input,
-    Loader,
-    Message,
-    Popup,
-    Menu,
-    Modal,
-    Label,
-    SemanticCOLORS,
-    Form,
-} from 'semantic-ui-react';
+import { DropdownProps, Grid, Message } from 'semantic-ui-react';
 import io, { Socket } from 'socket.io-client';
+import type WebTorrent from 'webtorrent';
 import {
     formatSpeed,
-    iceServers,
-    isMobile,
+    getAndSaveClientId,
+    ioPath,
+    isYouTube,
     serverPath,
     testAutoplay,
-    openFileSelector,
-    getAndSaveClientId,
-    calculateMedian,
-    getUserImage,
-    getColorForString,
-    isYouTube,
-    isMagnet,
-    isHttp,
-    ioPath,
 } from '../../utils';
 import { generateName } from '../../utils/generateName';
 import { Chat } from '../Chat';
-import { TopBar } from '../TopBar';
 import { ComboBox } from '../ComboBox/ComboBox';
-import { SearchComponent } from '../SearchComponent/SearchComponent';
 import { Controls } from '../Controls/Controls';
 import { ErrorModal } from '../Modal/ErrorModal';
 import { PasswordModal } from '../Modal/PasswordModal';
+import { TopBar } from '../TopBar';
+import styles from './App.module.css';
 import { HTML } from './HTML';
 import { YouTube } from './YouTube';
-import type WebTorrent from 'webtorrent';
-import styles from './App.module.css';
 
 declare global {
     interface Window {
@@ -465,21 +439,6 @@ export default class App extends React.Component<AppProps, AppState> {
         }, 1000);
     };
 
-    launchMultiSelect = (
-        data?: {
-            name: string;
-            url: string;
-            length: number;
-            playFn?: () => void;
-        }[]
-    ) => {
-        this.setState({ multiStreamSelection: data });
-    };
-
-    resetMultiSelect = () => {
-        this.setState({ multiStreamSelection: undefined });
-    };
-
     loadYouTube = () => {
         // This code loads the IFrame Player API code asynchronously.
         const tag = document.createElement('script');
@@ -540,14 +499,6 @@ export default class App extends React.Component<AppProps, AppState> {
         };
     };
 
-    // Functions for managing room settings
-    getInviteLink = (vanity: string) => {
-        if (vanity) {
-            return `${window.location.origin}/r/${vanity}`;
-        }
-        return `${window.location.origin}/watch${this.state.roomId}`;
-    };
-
     setOwner = (owner: string) => {
         this.setState({ owner });
     };
@@ -576,307 +527,6 @@ export default class App extends React.Component<AppProps, AppState> {
     setIsChatDisabled = (val: boolean) =>
         this.setState({ isChatDisabled: val });
 
-    // Share the video to mediasoup
-    publishMediasoup = async (mediasoupURL: string) => {
-        const localStream = this.localStreamToPublish;
-        let device: MediasoupClient.types.Device = null as any;
-        let producerTransport: MediasoupClient.types.Transport = null as any;
-
-        // =========== socket.io ==========
-        const connectSocket = (mediasoupURL: string) => {
-            return new Promise<void>((resolve, reject) => {
-                this.mediasoupPubSocket = io(mediasoupURL, {
-                    transports: ['websocket'],
-                });
-
-                const socket = this.mediasoupPubSocket;
-                socket?.on('connect', function () {
-                    console.log('PUBLISH: connected to socket.io');
-                    resolve();
-                });
-                socket?.on('error', function (err) {
-                    console.error('PUBLISH: socket.io ERROR:', err);
-                    reject(err);
-                });
-            });
-        };
-
-        const sendRequest = (type: string, data: any) => {
-            return new Promise<any>((resolve, reject) => {
-                const socket = this.mediasoupPubSocket;
-                socket?.emit(type, data, (err: any, response: any) => {
-                    if (!err) {
-                        // Success response, so pass the mediasoup response to the local Room.
-                        resolve(response);
-                    } else {
-                        reject(err);
-                    }
-                });
-            });
-        };
-
-        async function publish() {
-            // --- get transport info ---
-            console.log('PUBLISH: --- createProducerTransport --');
-            const params = await sendRequest('createProducerTransport', {});
-            console.log('PUBLISH: transport params:', params);
-            producerTransport = device.createSendTransport(params);
-            console.log('PUBLISH: createSendTransport:', producerTransport);
-
-            // --- join & start publish --
-            producerTransport.on(
-                'connect',
-                async (
-                    {
-                        dtlsParameters,
-                    }: { dtlsParameters: MediasoupClient.types.DtlsParameters },
-                    callback: () => void,
-                    errback: (error: Error) => void
-                ) => {
-                    console.log('PUBLISH: --transport connect');
-                    sendRequest('connectProducerTransport', {
-                        dtlsParameters: dtlsParameters,
-                    })
-                        .then(callback)
-                        .catch(errback);
-                }
-            );
-
-            producerTransport.on(
-                'produce',
-                async (
-                    {
-                        kind,
-                        rtpParameters,
-                    }: {
-                        kind: string;
-                        rtpParameters: MediasoupClient.types.RtpParameters;
-                    },
-                    callback: ({ id }: { id: string }) => void,
-                    errback: (error: Error) => void
-                ) => {
-                    console.log('PUBLISH: --transport produce');
-                    try {
-                        const { id } = await sendRequest('produce', {
-                            transportId: producerTransport.id,
-                            kind,
-                            rtpParameters,
-                        });
-                        callback({ id });
-                    } catch (err: any) {
-                        errback(err);
-                    }
-                }
-            );
-
-            const videoTrack = localStream?.getVideoTracks()[0];
-            if (videoTrack) {
-                const trackParams = { track: videoTrack };
-                await producerTransport.produce(trackParams);
-            }
-            const audioTrack = localStream?.getAudioTracks()[0];
-            if (audioTrack) {
-                const trackParams = { track: audioTrack };
-                await producerTransport.produce(trackParams);
-            }
-        }
-
-        async function loadDevice(
-            routerRtpCapabilities: MediasoupClient.types.RtpCapabilities
-        ) {
-            const { Device } = await import('mediasoup-client');
-            device = new Device();
-            await device.load({ routerRtpCapabilities });
-        }
-
-        await connectSocket(mediasoupURL);
-        // --- get capabilities --
-        const data = await sendRequest('getRouterRtpCapabilities', {});
-        console.log('PUBLISH: getRouterRtpCapabilities:', data);
-        await loadDevice(data);
-        await publish();
-    };
-
-    // Play the video from MediaSoup
-    subscribeMediasoup = async (mediaSoupURL: string) => {
-        let device: MediasoupClient.types.Device = null as any;
-        let consumerTransport: MediasoupClient.types.Transport = null as any;
-        // =========== socket.io ==========
-
-        const connectSocket = () => {
-            return new Promise<void>((resolve, reject) => {
-                this.mediasoupSubSocket = io(mediaSoupURL, {
-                    transports: ['websocket'],
-                });
-                const socket = this.mediasoupSubSocket;
-                socket?.on('connect', function () {
-                    console.log('SUBSCRIBE: connected to socket.io');
-                    resolve();
-                });
-                socket?.on('error', function (err) {
-                    console.error('SUBSCRIBE: socket.io ERROR:', err);
-                    reject(err);
-                });
-                socket?.on('newProducer', async function (message) {
-                    console.log('SUBSCRIBE: socket.io newProducer:', message);
-                    if (consumerTransport) {
-                        // start consume
-                        if (message.kind === 'video') {
-                            await consumeAndResume(message.kind);
-                        } else if (message.kind === 'audio') {
-                            await consumeAndResume(message.kind);
-                        }
-                    }
-                });
-            });
-        };
-
-        const sendRequest = (type: string, data: any) => {
-            return new Promise<any>((resolve, reject) => {
-                const socket = this.mediasoupSubSocket;
-                socket?.emit(type, data, (err: Error, response: any) => {
-                    if (!err) {
-                        // Success response, so pass the mediasoup response to the local Room.
-                        resolve(response);
-                    } else {
-                        reject(err);
-                    }
-                });
-            });
-        };
-
-        // =========== media handling ==========
-        const addRemoteTrack = (track: MediaStreamTrack) => {
-            let video = this.HTMLInterface.getVideoEl();
-            if (video.srcObject) {
-                // Track already exists, add it
-                (video.srcObject as MediaStream).addTrack(track);
-            } else {
-                const mediaStream = new MediaStream();
-                mediaStream.addTrack(track);
-                video.srcObject = mediaStream;
-            }
-            this.localPlay();
-        };
-
-        async function consumeAndResume(kind: string) {
-            const consumer = await consume(consumerTransport, kind);
-            if (consumer) {
-                console.log(
-                    'SUBSCRIBE: -- track exist, consumer ready. kind=' + kind
-                );
-                if (kind === 'video') {
-                    console.log('SUBSCRIBE: -- resume kind=' + kind);
-                    sendRequest('resume', { kind: kind })
-                        .then(() => {
-                            console.log('SUBSCRIBE: resume OK');
-                            return consumer;
-                        })
-                        .catch(err => {
-                            console.error('SUBSCRIBE: resume ERROR:', err);
-                            return consumer;
-                        });
-                } else {
-                    console.log('SUBSCRIBE: -- do not resume kind=' + kind);
-                }
-            } else {
-                console.log('SUBSCRIBE: -- no consumer yet. kind=' + kind);
-                return null;
-            }
-        }
-
-        async function loadDevice(
-            routerRtpCapabilities: MediasoupClient.types.RtpCapabilities
-        ) {
-            try {
-                const { Device } = await import('mediasoup-client');
-                device = new Device();
-                await device.load({ routerRtpCapabilities });
-            } catch (error: any) {
-                if (error.name === 'UnsupportedError') {
-                    console.error('browser not supported');
-                }
-            }
-        }
-
-        async function consume(
-            transport: MediasoupClient.types.Transport,
-            trackKind: string
-        ) {
-            console.log('SUBSCRIBE: --start of consume --kind=' + trackKind);
-            const { rtpCapabilities } = device;
-            const data = await sendRequest('consume', {
-                rtpCapabilities: rtpCapabilities,
-                kind: trackKind,
-            }).catch(err => {
-                console.error('SUBSCRIBE: ERROR:', err);
-            });
-            const { producerId, id, kind, rtpParameters } = data;
-
-            if (producerId) {
-                let codecOptions = {};
-                const consumer = await transport.consume({
-                    id,
-                    producerId,
-                    kind,
-                    rtpParameters,
-                    //@ts-ignore
-                    codecOptions,
-                });
-
-                addRemoteTrack(consumer.track);
-                console.log('SUBSCRIBE: --end of consume');
-                return consumer;
-            } else {
-                console.warn('SUBSCRIBE: ---remote producer NOT READY');
-                return null;
-            }
-        }
-
-        async function subscribe() {
-            console.log('SUBSCRIBE: ---createConsumerTransport --');
-            const params = await sendRequest('createConsumerTransport', {});
-            console.log('SUBSCRIBE: transport params:', params);
-            consumerTransport = device.createRecvTransport(params);
-            console.log(
-                'SUBSCRIBE: createConsumerTransport:',
-                consumerTransport
-            );
-
-            // --- join & start watching
-            consumerTransport.on(
-                'connect',
-                async (
-                    {
-                        dtlsParameters,
-                    }: { dtlsParameters: MediasoupClient.types.DtlsParameters },
-                    callback: () => void,
-                    errback: (err: Error) => void
-                ) => {
-                    console.log('SUBSCRIBE: ---consumer transport connect');
-                    sendRequest('connectConsumerTransport', {
-                        dtlsParameters: dtlsParameters,
-                    })
-                        .then(callback)
-                        .catch(errback);
-                }
-            );
-
-            await consumeAndResume('video');
-            await consumeAndResume('audio');
-        }
-
-        // Clear the srcobject so we load our stream when received
-        const leftVideo = this.HTMLInterface.getVideoEl();
-        leftVideo.srcObject = null;
-        await connectSocket();
-        // --- get capabilities --
-        const data = await sendRequest('getRouterRtpCapabilities', {});
-        console.log('getRouterRtpCapabilities:', data);
-        await loadDevice(data);
-        await subscribe();
-    };
-
     changeController = async (_e: any, data: DropdownProps) => {
         // console.log(data);
         this.socket.emit('CMD:changeController', data.value);
@@ -896,10 +546,6 @@ export default class App extends React.Component<AppProps, AppState> {
         return !this.usingYoutube();
     };
 
-    hasDuration = () => {
-        // Youtube, link, or magnet, etc. Has a defined runtime (not WebRTC)
-        return isHttp(this.state.roomMedia) || isMagnet(this.state.roomMedia);
-    };
 
     localSeek = (customTime?: number) => {
         // Jump to the leader's position, or a custom one
@@ -958,13 +604,6 @@ export default class App extends React.Component<AppProps, AppState> {
     localSetVolume = (volume: number) => {
         this.Player().setVolume(volume);
         this.refreshControls();
-    };
-
-    localSubtitleModal = () => {
-        // Native player uses subtitle modal.
-        if (this.usingNative()) {
-            this.setState({ isSubtitleModalOpen: true });
-        }
     };
 
     roomSetPlaybackRate = (rate: number) => {
@@ -1035,16 +674,12 @@ export default class App extends React.Component<AppProps, AppState> {
         let container = document.getElementById(
             'theaterContainer'
         ) as HTMLElement;
-        if (bVideoOnly || isMobile()) {
-            if (!isMobile()) {
+        if (bVideoOnly) {
                 // Can't really control the VBrowser on mobile anyway, so just fullscreen the video
                 // https://github.com/howardchung/watchparty/issues/208
                 container = document.getElementById(
                     'leftVideoParent'
                 ) as HTMLElement;
-            } else {
-                container = this.Player().getVideoEl();
-            }
         }
         if (
             !container.requestFullscreen &&
@@ -1070,7 +705,7 @@ export default class App extends React.Component<AppProps, AppState> {
     };
 
     roomSetMedia = (data: DropdownProps) => {
-        console.log('data in set func:' ,data);
+        console.log('data in set func:', data);
         this.socket.emit('CMD:host', data.value);
     };
 
@@ -1091,44 +726,6 @@ export default class App extends React.Component<AppProps, AppState> {
         this.setState({ myName: data.value });
         this.socket.emit('CMD:name', data.value);
         window.localStorage.setItem('watchparty-username', data.value);
-    };
-
-    getMediaDisplayName = (input: string) => {
-        if (!input) {
-            return '';
-        }
-        // Show the whole URL for youtube
-        if (this.usingYoutube()) {
-            return input;
-        }
-
-        if (isMagnet(input)) {
-            const magnetParsed = new URLSearchParams(input);
-            const index = magnetParsed.get('fileIndex');
-            return (
-                magnetParsed.get('dn') +
-                (index != null ? ` (file ${index})` : '')
-            );
-        }
-        if (input.includes('/stream?torrent=magnet')) {
-            const search = new URL(input).search;
-            const searchParsed = new URLSearchParams(search);
-            const magnetUrl = searchParsed.get('torrent') ?? '';
-            const magnetParsed = new URLSearchParams(magnetUrl);
-            const index = searchParsed.get('fileIndex');
-            return (
-                magnetParsed.get('dn') +
-                (index != null ? ` (file ${index})` : '')
-            );
-        }
-        if (input.includes('/proxy')) {
-            const urlParsed = new URLSearchParams(input);
-            const displayName = urlParsed.get('displayName');
-            if (displayName) {
-                return displayName;
-            }
-        }
-        return input;
     };
 
     setLoadingFalse = () => {
@@ -1178,8 +775,7 @@ export default class App extends React.Component<AppProps, AppState> {
                 roomSeek={this.roomSeek}
             />
         );
-        const displayRightContent =
-            this.state.showRightBar;
+        const displayRightContent = this.state.showRightBar;
         const rightBar = (
             <Grid.Column
                 width={displayRightContent ? 4 : 1}
@@ -1197,7 +793,6 @@ export default class App extends React.Component<AppProps, AppState> {
                     pictureMap={this.state.pictureMap}
                     socket={this.socket}
                     scrollTimestamp={this.state.scrollTimestamp}
-                    getMediaDisplayName={this.getMediaDisplayName}
                     hide={
                         this.state.currentTab !== 'chat' || !displayRightContent
                     }
@@ -1286,7 +881,6 @@ export default class App extends React.Component<AppProps, AppState> {
                                             <ComboBox
                                                 roomSetMedia={this.roomSetMedia}
                                                 roomMedia={this.state.roomMedia}
-                                                
                                                 streamPath={
                                                     this.props.streamPath
                                                 }
@@ -1300,44 +894,7 @@ export default class App extends React.Component<AppProps, AppState> {
                                                     display: 'flex',
                                                     gap: '4px',
                                                 }}
-                                            >
-                                                {false && (
-                                                    <SearchComponent
-                                                        setMedia={
-                                                            this.roomSetMedia
-                                                        }
-                                                        playlistAdd={
-                                                            this.roomPlaylistAdd
-                                                        }
-                                                        type={'youtube'}
-                                                        streamPath={
-                                                            this.props
-                                                                .streamPath
-                                                        }
-                                                    />
-                                                )}
-                                                {Boolean(
-                                                    this.props.streamPath
-                                                ) && (
-                                                    <SearchComponent
-                                                        setMedia={
-                                                            this.roomSetMedia
-                                                        }
-                                                        playlistAdd={
-                                                            this.roomPlaylistAdd
-                                                        }
-                                                        type={'stream'}
-                                                        streamPath={
-                                                            this.props
-                                                                .streamPath
-                                                        }
-                                                        launchMultiSelect={
-                                                            this
-                                                                .launchMultiSelect
-                                                        }
-                                                    />
-                                                )}
-                                            </div>
+                                            ></div>
                                             <Separator />
                                         </React.Fragment>
                                     )}
@@ -1414,7 +971,6 @@ export default class App extends React.Component<AppProps, AppState> {
                                         </div>
                                     )}
                                 </div>
-                                
                             </Grid.Column>
                             {rightBar}
                         </Grid.Row>

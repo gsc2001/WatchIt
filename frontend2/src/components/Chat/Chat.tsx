@@ -32,7 +32,6 @@ interface ChatProps {
     socket: Socket;
     scrollTimestamp: number;
     className?: string;
-    getMediaDisplayName: (input: string) => string;
     hide?: boolean;
     isChatDisabled?: boolean;
     ref: RefObject<Chat>;
@@ -112,25 +111,7 @@ export class Chat extends React.Component<ChatProps> {
     };
 
     formatMessage = (cmd: string, msg: string): React.ReactNode | string => {
-        if (cmd === 'host') {
-            return (
-                <React.Fragment>
-                    {`changed the video to `}
-                    <span style={{ textTransform: 'initial' }}>
-                        {this.props.getMediaDisplayName(msg)}
-                    </span>
-                </React.Fragment>
-            );
-        } else if (cmd === 'playlistAdd') {
-            return (
-                <React.Fragment>
-                    {`added to the playlist: `}
-                    <span style={{ textTransform: 'initial' }}>
-                        {this.props.getMediaDisplayName(msg)}
-                    </span>
-                </React.Fragment>
-            );
-        } else if (cmd === 'seek') {
+         if (cmd === 'seek') {
             return `jumped to ${formatTimestamp(msg)}`;
         } else if (cmd === 'play') {
             return `started the video at ${formatTimestamp(msg)}`;

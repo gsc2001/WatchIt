@@ -31,35 +31,35 @@ export async function createRoom(
     }
 }
 
-export class NewRoomButton extends React.Component<{
-    size?: SemanticSIZES;
-    openNewTab?: boolean;
-}> {
-    createRoom = async () => {
-        await createRoom(this.props.openNewTab);
-    };
-    render() {
-        return (
-            <Button
-                size={this.props.size}
-                icon
-                labelPosition="left"
-                onClick={this.createRoom}
-                className={this.props.size ? '' : 'toolButton'}
-                fluid
-                style={{  
-                    backgroundImage:
-                    'linear-gradient( 136deg, rgb(138,35,135) 0%, rgb(233,64,87) 50%, rgb(242,113,33) 100%)',
-                    boxShadow: '0 4px 10px 0 rgba(0,0,0,.25)',
-                    borderRadius: '50px',
-                }}
-            >
-                <Icon name="play" />
-                New Room
-            </Button>
-        );
-    }
-}
+// export class NewRoomButton extends React.Component<{
+//     size?: SemanticSIZES;
+//     openNewTab?: boolean;
+// }> {
+//     createRoom = async () => {
+//         await createRoom(this.props.openNewTab);
+//     };
+//     render() {
+//         return (
+//             <Button
+//                 size={this.props.size}
+//                 icon
+//                 labelPosition="left"
+//                 onClick={this.createRoom}
+//                 className={this.props.size ? '' : 'toolButton'}
+//                 fluid
+//                 style={{  
+//                     backgroundImage:
+//                     'linear-gradient( 136deg, rgb(138,35,135) 0%, rgb(233,64,87) 50%, rgb(242,113,33) 100%)',
+//                     boxShadow: '0 4px 10px 0 rgba(0,0,0,.25)',
+//                     borderRadius: '50px',
+//                 }}
+//             >
+//                 <Icon name="play" />
+//                 New Room
+//             </Button>
+//         );
+//     }
+// }
 
 export class TopBar extends React.Component<{
     hideNewRoom?: boolean;
@@ -173,9 +173,6 @@ export class TopBar extends React.Component<{
                         }}
                     >
                         {this.props.showInviteButton && <InviteButton />}
-                        {!this.props.hideNewRoom && (
-                            <NewRoomButton openNewTab />
-                        )}
                     </div>
                 </div>
             </React.Fragment>

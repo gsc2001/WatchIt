@@ -1,4 +1,4 @@
-import { isMagnet, isYouTube } from '.';
+import { isYouTube } from '.';
 
 export const examples: SearchResult[] = [
     {
@@ -10,9 +10,7 @@ export const examples: SearchResult[] = [
     let type = 'file';
     if (isYouTube(url)) {
         type = 'youtube';
-    } else if (isMagnet(url)) {
-        type = 'magnet';
-    }
+    } 
     const img = typeof urlOrObject === 'object' ? urlOrObject.img : '';
     return {
         url,

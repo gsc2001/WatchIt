@@ -37,9 +37,7 @@ export const Home = () => {
                         alignItems: 'stretch',
                     }}
                 >
-                    <div className={styles.featureSection}>
-                    <CustomizedSteppers/>
-                    </div>
+                <CustomizedSteppers/>
                 </div>
             </div>
         </div>
