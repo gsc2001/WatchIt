@@ -10,82 +10,76 @@ type HTMLVideoElementDict = { [key: string]: HTMLVideoElement };
 type MediaType = 'vbrowser' | 'screenshare' | 'video' | 'youtube';
 
 interface User {
-  id: string;
-  isVideoChat?: boolean;
-  isMuted?: boolean;
-  isScreenShare?: boolean;
-  isSub?: boolean;
-  clientId: string;
+    id: string;
+    isVideoChat?: boolean;
+    isMuted?: boolean;
+    isScreenShare?: boolean;
+    isSub?: boolean;
+    clientId: string;
 }
 
 interface Reaction {
-  user: string;
-  value: string;
-  msgId: string;
-  msgTimestamp: string;
+    user: string;
+    value: string;
+    msgId: string;
+    msgTimestamp: string;
 }
 
-interface ChatMessageBase {
-  id: string;
-  cmd?: string;
-  msg: string;
-  system?: boolean;
-  isSub?: boolean;
-}
-
-interface ChatMessage extends ChatMessageBase {
-  timestamp: string;
-  videoTS?: number;
-  reactions?: { [value: string]: string[] };
+interface ChatMessage {
+    senderName: string;
+    avatarId: number;
+    cmd: string;
+    msg: string;
+    timestamp: string;
 }
 
 interface Settings {
-  disableChatSound?: boolean;
+    disableChatSound?: boolean;
 }
 
 interface PlaylistVideo {
-  url: string;
-  name: string;
-  img?: string;
-  channel?: string;
-  duration: number;
-  type: string;
+    url: string;
+    name: string;
+    img?: string;
+    channel?: string;
+    duration: number;
+    type: string;
 }
 
 interface SearchResult extends PlaylistVideo {
-  size?: string | number;
-  seeders?: string;
-  magnet?: string;
-  type: string;
-  url: string;
-  name: string;
-  duration: number;
+    size?: string | number;
+    seeders?: string;
+    magnet?: string;
+    type: string;
+    url: string;
+    name: string;
+    duration: number;
 }
 
 interface HostState {
-  video: string;
-  videoTS: number;
-  subtitle: string;
-  paused: boolean;
-  isVBrowserLarge: boolean;
-  controller?: string;
-  playbackRate: number;
-  loop: boolean;
+    video: string;
+    videoTS: number;
+    subtitle: string;
+    paused: boolean;
+    isVBrowserLarge: boolean;
+    controller?: string;
+    playbackRate: number;
+    loop: boolean;
 }
 
 interface PersistentRoom {
-  roomId: string;
-  password: string;
-  owner: string;
-  vanity: string;
-  isChatDisabled: boolean;
-  isSubRoom: boolean;
-  data: any;
+    roomId: string;
+    password: string;
+    owner: string;
+    vanity: string;
+    isChatDisabled: boolean;
+    isSubRoom: boolean;
+    data: any;
 }
 
 interface LinkAccount {
-  accountname: string;
-  accountid: string;
-  discriminator: string;
-  kind: string;
+    accountname: string;
+    accountid: string;
+    discriminator: string;
+    kind: string;
 }

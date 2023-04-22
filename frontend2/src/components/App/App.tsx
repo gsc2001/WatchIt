@@ -61,7 +61,6 @@ interface AppState {
     chat: ChatMessage[];
     playlist: PlaylistVideo[];
     leaderTime: number;
-    nameMap: StringDict;
     pictureMap: StringDict;
     myName: string;
     myPicture: string;
@@ -123,7 +122,6 @@ export default class App extends React.Component<AppProps, AppState> {
         chat: [],
         playlist: [],
         leaderTime: 0,
-        nameMap: {},
         pictureMap: {},
         myName: '',
         myPicture: '',
@@ -404,10 +402,6 @@ export default class App extends React.Component<AppProps, AppState> {
                         ? this.state.unreadCount
                         : this.state.unreadCount + 1,
             });
-        });
-        socket.on('REC:nameMap', (data: StringDict) => {
-            console.log(data);
-            this.setState({ nameMap: data });
         });
         socket.on('REC:leaderTime', (data: number) => {
             this.setState({ leaderTime: data });
@@ -780,7 +774,6 @@ export default class App extends React.Component<AppProps, AppState> {
                 <p style={{ color: 'white' }}>Name: {this.state.myName}</p>
                 <Chat
                     chat={this.state.chat}
-                    nameMap={this.state.nameMap}
                     pictureMap={this.state.pictureMap}
                     socket={this.socket}
                     scrollTimestamp={this.state.scrollTimestamp}

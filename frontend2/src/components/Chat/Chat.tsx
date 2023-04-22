@@ -14,7 +14,6 @@ import classes from './Chat.module.css';
 
 interface ChatProps {
     chat: ChatMessage[];
-    nameMap: StringDict;
     pictureMap: StringDict;
     socket: Socket;
     scrollTimestamp: number;
@@ -102,7 +101,7 @@ export class Chat extends React.Component<ChatProps> {
         } else if (cmd === 'pause') {
             return `paused the video at ${formatTimestamp(msg)}`;
         } else if (cmd == 'join') {
-            return `${msg} joined the room`
+            return `${msg} joined the room`;
         }
         return cmd;
     };
@@ -131,21 +130,11 @@ export class Chat extends React.Component<ChatProps> {
                     style={{ position: 'relative', paddingTop: 13 }}
                 >
                     <Comment.Group>
-                        {this.props.chat.map(msg => (
+                        {this.props.chat.map((msg, idx) => (
                             <ChatMessage
-                                key={msg.timestamp + msg.id}
-                                className={
-                                    msg.id ===
-                                        this.state.reactionMenu.selectedMsgId &&
-                                    msg.timestamp ===
-                                        this.state.reactionMenu
-                                            .selectedMsgTimestamp
-                                        ? classes.selected
-                                        : ''
-                                }
+                                key={idx}
                                 message={msg}
                                 pictureMap={this.props.pictureMap}
-                                nameMap={this.props.nameMap}
                                 formatMessage={this.formatMessage}
                             />
                         ))}
@@ -175,41 +164,40 @@ export class Chat extends React.Component<ChatProps> {
 
 const ChatMessage = ({
     message,
-    nameMap,
     pictureMap,
     formatMessage,
-    className,
 }: {
     message: ChatMessage;
-    nameMap: StringDict;
     pictureMap: StringDict;
     formatMessage: (cmd: string, msg: string) => React.ReactNode;
-    className: string;
 }) => {
-    const { id, timestamp, cmd, msg, system, isSub, reactions, videoTS } =
-        message;
+    const { senderName, avatarId, timestamp, cmd, msg } = message;
     const spellFull = 5; // the number of people whose names should be written out in full in the reaction popup
     return (
-        <Comment className={`${classes.comment} ${className}`}>
+        <Comment className={`${classes.comment}`}>
             <div style={{ display: 'flex' }}>
                 <Comment.Avatar
-                    src={`/im${7}.jpg`}
+                    src={`/im${avatarId}.jpg`}
                     style={{
                         marginRight: '2em',
                         width: '4em',
                         height: '4em',
                     }}
                 />
-                <div style={{flex: 1}}>
-                    <div style={{ display: 'flex' , marginRight: '2rem', justifyContent: 'space-between'}}>
-                        <Comment.Author as="a">{id}</Comment.Author>
+                <div style={{ flex: 1 }}>
+                    <div
+                        style={{
+                            display: 'flex',
+                            marginRight: '2rem',
+                            justifyContent: 'space-between',
+                        }}
+                    >
+                        <Comment.Author as="a">{senderName}</Comment.Author>
                         <Comment.Metadata className={styles.dark}>
                             <div
                                 title={new Date(timestamp).toLocaleDateString()}
                             >
                                 {new Date(timestamp).toLocaleTimeString()}
-                                {Boolean(videoTS) && ' @ '}
-                                {formatTimestamp(videoTS)}
                             </div>
                         </Comment.Metadata>
                     </div>

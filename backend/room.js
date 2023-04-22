@@ -21,10 +21,10 @@ class Room {
         this.chatMsgs = [];
 
         // list of users
-        /**@type{{ clientId:string, socketId:string, name?:string }[]} */
+        /**@type{{ clientId:string, socketId:string, id: }[]} */
         this.roster = [];
 
-        this.clientIdMap = {};
+        this.avatarIdMap = {};
         this.nameMap = {};
         this.tsMap = {};
         this.syncInterval = setInterval(() => {
@@ -33,7 +33,6 @@ class Room {
                 if (!memberIds.includes(key)) {
                     delete this.tsMap[key];
                     delete this.nameMap[key];
-                    delete this.clientIdMap[key];
                 }
             });
             if (this.video) {
@@ -58,10 +57,10 @@ class Room {
         this.io.of(this.namespace).on('connection', socket => {
             const clientId = socket.handshake.query?.clientId;
             console.log('client joined room: ', this.roomId, socket.id);
+            this.avatarIdMap[socket.id] = this.roster.length % 7 + 1;
             this.roster.push({ clientId, socketId: socket.id });
 
             socket.emit('REC:host', this.getState());
-            socket.emit('REC:nameMap', this.nameMap);
             socket.emit('REC:leaderTime', this.videoTS);
             socket.emit('REC:chatinit', this.chatMsgs);
             this.io.of(this.namespace).emit('REC:roster', this.roster);
@@ -92,17 +91,21 @@ class Room {
         this.io.of(this.namespace).emit('REC:host', this.getState());
         this.io.of(this.namespace).emit('REC:leaderTime', this.videoTS);
     }
+    addChatMessage(chatMsg) {
+        this.chatMsgs.push(chatMsg);
+        this.io.of(this.namespace).emit('REC:chatMsg', chatMsg);
+    }
+
     sendChatMessage(socket, message) {
         console.log('got chat message', message);
         const chatMsg = {
-            id: socket.id,
+            senderName: this.nameMap[socket.id],
+            avatarId: this.avatarIdMap[socket.id],
+            cmd: '',
             msg: message,
             timestamp: new Date().toISOString(),
         };
-
-        this.chatMsgs.push(chatMsg);
-        this.chatMsgs = this.chatMsgs.splice(-100);
-        this.io.of(this.namespace).emit('REC:chatMsg', chatMsg);
+        this.addChatMessage(chatMsg);
     }
     playVideo(socket) {
         socket.broadcast.emit('REC:play');
@@ -125,7 +128,6 @@ class Room {
             return;
         }
         this.nameMap[socket.id] = data;
-        this.io.of(this.roomId).emit('REC:nameMap', this.nameMap);
     }
     setTimestamp(socket, data) {
         if (data > this.videoTS) {
