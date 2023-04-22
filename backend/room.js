@@ -58,7 +58,13 @@ class Room {
         this.io.of(this.namespace).on('connection', socket => {
             const clientId = socket.handshake.query?.clientId;
             console.log('client joined room: ', this.roomId, socket.id);
-            this.avatarIdMap[socket.id] = this.roster.length;
+            this.avatarIdMap[socket.id] = Math.floor(Math.random() * 20);
+            for (var i = 0; i < 20; i++) {
+                if (!(i in Object.values(this.avatarIdMap))) {
+                    this.avatarIdMap[socket.id] = i;
+                    break;
+                }
+            }
             this.roster.push({ clientId, socketId: socket.id });
             this.tsMap[socket.id] = this.videoTS;
             socket.emit('REC:host', this.getState());
