@@ -58,7 +58,7 @@ class Room {
         this.io.of(this.namespace).on('connection', socket => {
             const clientId = socket.handshake.query?.clientId;
             console.log('client joined room: ', this.roomId, socket.id);
-            this.avatarIdMap[socket.id] = (this.roster.length % 7) + 1;
+            this.avatarIdMap[socket.id] = this.roster.length;
             this.roster.push({ clientId, socketId: socket.id });
             this.tsMap[socket.id] = this.videoTS;
             socket.emit('REC:host', this.getState());
@@ -152,7 +152,7 @@ class Room {
         if (data && data.length > 50) {
             return;
         }
-        const sendJoinedMessage = false;
+        let sendJoinedMessage = false;
         if (!(socket.id in this.nameMap)) {
             sendJoinedMessage = true;
         }
@@ -182,14 +182,16 @@ class Room {
     }
 
     disconnectUser = socket => {
-        const chatMsg = {
-            senderName: this.nameMap[socket.id],
-            avatarId: this.avatarIdMap[socket.id],
-            msg: this.nameMap[socket.id],
-            cmd: 'left',
-            timestamp: new Date().toISOString(),
-        };
-        this.addChatMessage(chatMsg);
+        if (socket.id in this.nameMap) {
+            const chatMsg = {
+                senderName: this.nameMap[socket.id],
+                avatarId: this.avatarIdMap[socket.id],
+                msg: this.nameMap[socket.id],
+                cmd: 'left',
+                timestamp: new Date().toISOString(),
+            };
+            this.addChatMessage(chatMsg);
+        }
         let index = this.roster.findIndex(user => user.socketId === socket.id);
         this.roster.splice(index, 1)[0];
         console.log('disconnected', socket.id);
