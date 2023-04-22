@@ -22,6 +22,7 @@ import { TopBar } from '../TopBar';
 import styles from './App.module.css';
 import { HTML } from './HTML';
 import { YouTube } from './YouTube';
+import toast from 'react-hot-toast';
 
 declare global {
     interface Window {
@@ -269,12 +270,14 @@ export default class App extends React.Component<AppProps, AppState> {
             console.log('username', userName);
             console.log('isNameSet', this.state.isNameSet);
             this.updateName(null, { value: userName });
+            toast.success('Joined room!');
         });
         socket.on('connect_error', (err: any) => {
             console.error(err);
             if (err.message === 'Invalid namespace') {
                 this.setState({ overlayMsg: "Couldn't load this room." });
             } else if (err.message === 'not authorized') {
+                toast.error('No password or wrong password');
                 this.setState({ isErrorAuth: true });
             }
         });
@@ -393,7 +396,7 @@ export default class App extends React.Component<AppProps, AppState> {
             );
         });
         socket.on('REC:chatMsg', (data: ChatMessage) => {
-            console.log(data)
+            console.log(data);
             this.state.chat.push(data);
             this.setState({
                 chat: this.state.chat,
