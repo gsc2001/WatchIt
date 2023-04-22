@@ -49,7 +49,7 @@ app.get('/checkRoom/:roomId', async (req, res) => {
 });
 
 async function init() {
-    await connectDB();
+    // await connectDB();
     server.listen(config.PORT, () => {
         console.log('Server started!');
     });
