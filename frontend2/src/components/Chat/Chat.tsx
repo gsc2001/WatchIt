@@ -70,41 +70,6 @@ export class Chat extends React.Component<ChatProps> {
         }
     }
 
-    setReactionMenu = (
-        isOpen: boolean,
-        selectedMsgId?: string,
-        selectedMsgTimestamp?: string,
-        yPosition?: number,
-        xPosition?: number
-    ) => {
-        this.setState({
-            reactionMenu: {
-                isOpen,
-                selectedMsgId,
-                selectedMsgTimestamp,
-                yPosition,
-                xPosition,
-            },
-        });
-    };
-
-    handleReactionClick = (value: string, id?: string, timestamp?: string) => {
-        const msg = this.props.chat.find(
-            m => m.id === id && m.timestamp === timestamp
-        );
-        const data = {
-            value,
-            msgId: id || this.state.reactionMenu.selectedMsgId,
-            msgTimestamp:
-                timestamp || this.state.reactionMenu.selectedMsgTimestamp,
-        };
-        if (msg?.reactions?.[value].includes(this.props.socket.id)) {
-            this.props.socket.emit('CMD:removeReaction', data);
-        } else {
-            this.props.socket.emit('CMD:addReaction', data);
-        }
-    };
-
     updateChatMsg = (_e: any, data: { value: string }) => {
         // console.log(e.target.selectionStart);
         this.setState({ chatMsg: data.value });
@@ -225,8 +190,6 @@ export class Chat extends React.Component<ChatProps> {
                                 formatMessage={this.formatMessage}
                                 socket={this.props.socket}
                                 isChatDisabled={this.props.isChatDisabled}
-                                setReactionMenu={this.setReactionMenu}
-                                handleReactionClick={this.handleReactionClick}
                             />
                         ))}
                         {/* <div ref={this.messagesEndRef} /> */}
@@ -286,19 +249,8 @@ export class Chat extends React.Component<ChatProps> {
                             previewPosition="none"
                             maxFrequentRows={1}
                             perLine={6}
-                            onClickOutside={() => this.setReactionMenu(false)}
-                            onEmojiSelect={(emoji: any) => {
-                                this.handleReactionClick(emoji.native);
-                                this.setReactionMenu(false);
-                            }}
                         />
                     </div>
-                    {/* <ReactionMenu
-            handleReactionClick={this.handleReactionClick}
-            closeMenu={() => this.setReactionMenu(false)}
-            yPosition={this.state.reactionMenu.yPosition}
-            xPosition={this.state.reactionMenu.xPosition}
-          /> */}
                 </CSSTransition>
                 <Form autoComplete="off">
                     <Input
@@ -356,8 +308,6 @@ const ChatMessage = ({
     formatMessage,
     socket,
     isChatDisabled,
-    setReactionMenu,
-    handleReactionClick,
     className,
 }: {
     message: ChatMessage;
@@ -366,18 +316,6 @@ const ChatMessage = ({
     formatMessage: (cmd: string, msg: string) => React.ReactNode;
     socket: Socket;
     isChatDisabled: boolean | undefined;
-    setReactionMenu: (
-        isOpen: boolean,
-        selectedMsgId?: string,
-        selectedMsgTimestamp?: string,
-        yPosition?: number,
-        xPosition?: number
-    ) => void;
-    handleReactionClick: (
-        value: string,
-        id?: string,
-        timestamp?: string
-    ) => void;
     className: string;
 }) => {
     const { id, timestamp, cmd, msg, system, isSub, reactions, videoTS } =
@@ -433,166 +371,6 @@ const ChatMessage = ({
                         {!cmd && msg}
                     </Comment.Text>
                 </Linkify>
-                <div className={classes.commentMenu}>
-                    <Icon
-                        onClick={(e: MouseEvent) => {
-                            const viewportOffset = (
-                                e.target as any
-                            ).getBoundingClientRect();
-                            setTimeout(() => {
-                                setReactionMenu(
-                                    true,
-                                    id,
-                                    timestamp,
-                                    viewportOffset.top,
-                                    viewportOffset.right
-                                );
-                            }, 100);
-                        }}
-                        name={undefined}
-                        inverted
-                        link
-                        disabled={isChatDisabled}
-                        style={{
-                            opacity: 1,
-                            display: 'flex',
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                            padding: 10,
-                            margin: 0,
-                        }}
-                    >
-                        <span
-                            role="img"
-                            aria-label="React"
-                            style={{ margin: 0, fontSize: 18 }}
-                        >
-                            😀
-                        </span>
-                    </Icon>
-                </div>
-                <TransitionGroup>
-                    {Object.keys(reactions ?? []).map(key =>
-                        reactions?.[key].length ? (
-                            <CSSTransition
-                                key={key}
-                                timeout={200}
-                                classNames={{
-                                    enter: classes['reaction-enter'],
-                                    enterActive:
-                                        classes['reaction-enter-active'],
-                                    exit: classes['reaction-exit'],
-                                    exitActive: classes['reaction-exit-active'],
-                                }}
-                                unmountOnExit
-                            >
-                                <Popup
-                                    content={`${reactions[key]
-                                        .slice(0, spellFull)
-                                        .map(id => nameMap[id] || 'Unknown')
-                                        .concat(
-                                            reactions[key].length > spellFull
-                                                ? [
-                                                      `${
-                                                          reactions[key]
-                                                              .length -
-                                                          spellFull
-                                                      } more`,
-                                                  ]
-                                                : []
-                                        )
-                                        .reduce(
-                                            (text, value, i, array) =>
-                                                text +
-                                                (i < array.length - 1
-                                                    ? ', '
-                                                    : ' and ') +
-                                                value
-                                        )} reacted.`}
-                                    offset={[0, 6]}
-                                    trigger={
-                                        <div
-                                            className={`${
-                                                classes.reactionContainer
-                                            } ${
-                                                reactions[key].includes(
-                                                    socket.id
-                                                )
-                                                    ? classes.highlighted
-                                                    : ''
-                                            }`}
-                                            onClick={() =>
-                                                handleReactionClick(
-                                                    key,
-                                                    message.id,
-                                                    message.timestamp
-                                                )
-                                            }
-                                        >
-                                            <span
-                                                style={{
-                                                    fontSize: 17,
-                                                    position: 'relative',
-                                                    bottom: 1,
-                                                }}
-                                            >
-                                                {key}
-                                            </span>
-                                            <SwitchTransition>
-                                                <CSSTransition
-                                                    key={
-                                                        key +
-                                                        '-' +
-                                                        reactions[key].length
-                                                    }
-                                                    classNames={{
-                                                        enter: classes[
-                                                            'reactionCounter-enter'
-                                                        ],
-                                                        enterActive:
-                                                            classes[
-                                                                'reactionCounter-enter-active'
-                                                            ],
-                                                        exit: classes[
-                                                            'reactionCounter-exit'
-                                                        ],
-                                                        exitActive:
-                                                            classes[
-                                                                'reactionCounter-exit-active'
-                                                            ],
-                                                    }}
-                                                    addEndListener={(
-                                                        node,
-                                                        done
-                                                    ) =>
-                                                        node.addEventListener(
-                                                            'transitionend',
-                                                            done,
-                                                            false
-                                                        )
-                                                    }
-                                                    unmountOnExit
-                                                >
-                                                    <span
-                                                        className={
-                                                            classes.reactionCounter
-                                                        }
-                                                        style={{
-                                                            color: 'rgba(255, 255, 255, 0.85)',
-                                                            marginLeft: 3,
-                                                        }}
-                                                    >
-                                                        {reactions[key].length}
-                                                    </span>
-                                                </CSSTransition>
-                                            </SwitchTransition>
-                                        </div>
-                                    }
-                                />
-                            </CSSTransition>
-                        ) : null
-                    )}
-                </TransitionGroup>
             </Comment.Content>
         </Comment>
     );
