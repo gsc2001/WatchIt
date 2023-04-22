@@ -1,13 +1,11 @@
-import React, { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 import {
     Icon,
     Popup,
     Button,
     Modal,
-    Header,
     Form,
-    Input,
     Checkbox,
 } from 'semantic-ui-react';
 
@@ -16,7 +14,9 @@ const JoinRoomModal = ({
 }: {
     closeJoinRoomModal: () => void;
 }) => {
-    const joinRoom = async () => {
+    const joinRoom = async (openNewTab: boolean) => {
+        localStorage.setItem('watchit_username', JSON.stringify(name));
+        const roomcode = '123-456'; // Get it from backend
         //   const response = await window.fetch(serverPath + '/createRoom', {
         //     method: 'POST',
         //     headers: {
@@ -28,15 +28,22 @@ const JoinRoomModal = ({
         //   });
         //   const data = await response.json();
         //   const { name } = data;
-        //   if (openNewTab) {
-        //     window.open('/watch' + name);
-        //   } else {
-        //     window.location.assign('/watch' + name);
-        //   }
+        if (openNewTab) {
+            window.open('/watch' + roomCode);
+        } else {
+            window.location.assign('/watch' + roomCode);
+        }
         console.log(name, roomCode, passcode);
         console.log('Send request to join rooom!');
         closeJoinRoomModal();
     };
+
+    useEffect(() => {
+        const name = localStorage.getItem('watchit_username');
+        if (name) {
+            setName(JSON.parse(name));
+        }
+    }, []);
 
     const [name, setName] = useState('');
     const [roomCode, setRoomCode] = useState('');
@@ -94,7 +101,7 @@ const JoinRoomModal = ({
                         </Form.Field>
                     ) : null}
                     <center>
-                        <Button type="submit" onClick={joinRoom}>
+                        <Button type="submit" onClick={() => joinRoom(true)}>
                             Submit
                         </Button>
                     </center>

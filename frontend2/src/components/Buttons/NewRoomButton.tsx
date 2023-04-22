@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 import {
     Icon,
@@ -19,6 +19,8 @@ const NewRoomModal = ({
         openNewTab: boolean | undefined
         // video: string = ''
     ) => {
+        localStorage.setItem('watchit_username', JSON.stringify(name));
+        const roomcode = '123-456'; // Get it from backend
         //   const response = await window.fetch(serverPath + '/createRoom', {
         //     method: 'POST',
         //     headers: {
@@ -31,14 +33,22 @@ const NewRoomModal = ({
         //   const data = await response.json();
         //   const { name } = data;
         if (openNewTab) {
-            window.open('/watch' + name);
+            window.open('/watch/' + roomcode);
         } else {
-            window.location.assign('/watch' + name);
+            window.location.assign('/watch/' + roomcode);
         }
+        closeNewRoomModal();
     };
 
     const [name, setName] = useState('');
     const [isPrivate, setIsPrivate] = useState(false);
+
+    useEffect(() => {
+        const name = localStorage.getItem('watchit_username');
+        if (name) {
+            setName(JSON.parse(name));
+        }
+    }, []);
 
     return (
         <Modal open centered={false} size="tiny" onClose={closeNewRoomModal}>
@@ -69,10 +79,7 @@ const NewRoomModal = ({
                         />
                     </Form.Field>
                     <center>
-                        <Button type="submit" onClick={() => {
-                            closeNewRoomModal()
-                            createRoom(true)
-                        }}>
+                        <Button type="submit" onClick={() => createRoom(true)}>
                             Submit
                         </Button>
                     </center>
