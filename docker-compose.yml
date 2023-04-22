@@ -10,16 +10,6 @@ services:
             - MONGO_INITDB_DATABASE=$DB_NAME
         volumes:
             - ./data:/data/db
-    db_interface:
-        image: mongo-express
-        environment:
-            - ME_CONFIG_MONGODB_ADMINUSERNAME=$DB_USERNAME
-            - ME_CONFIG_MONGODB_ADMINPASSWORD=$DB_PASSWORD
-            - ME_CONFIG_MONGODB_SERVER=db
-        ports:
-            - 8081:8081
-        networks:
-            - db_network
     backend:
         build: ./backend
         volumes:
@@ -34,9 +24,9 @@ services:
             - db_network
 
     frontend:
-        build: ./frontend2
+        build: ./frontend
         volumes:
-            - $PWD/frontend2:/app
+            - $PWD/frontend:/app
         environment:
             - NODE_ENV=development
             - CHOKIDAR_USEPOLLING=true
