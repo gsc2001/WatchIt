@@ -1,0 +1,55 @@
+version: '3.1'
+services:
+    db:
+        image: mongo
+        networks:
+            - db_network
+        environment:
+            - MONGO_INITDB_ROOT_USERNAME=$DB_USERNAME
+            - MONGO_INITDB_ROOT_PASSWORD=$DB_PASSWORD
+            - MONGO_INITDB_DATABASE=$DB_NAME
+        volumes:
+            - ./data:/data/db
+    backend:
+        build: ./backend
+        volumes:
+            - $PWD/backend:/app
+        environment:
+            - DEBUG=0
+            - SECRET_KEY=$SECRET_KEY
+            - PORT=8000
+            - DB_URL=mongodb://$DB_USERNAME:$DB_PASSWORD@db:27017
+        networks:
+            - web_network
+            - db_network
+
+    frontend:
+        build:
+            context: ./frontend
+            dockerfile: Dockerfile.prod
+        volumes:
+            - $PWD/frontend:/app
+        environment:
+            - NODE_ENV=development
+            - CHOKIDAR_USEPOLLING=true
+            - WDS_SOCKET_PORT=0
+        depends_on:
+            - backend
+        networks:
+            - web_network
+
+    nginx:
+        image: nginx:latest
+        volumes:
+            - ./config/nginx:/etc/nginx/conf.d/
+        networks:
+            - web_network
+        depends_on:
+            - backend
+            - frontend
+        ports:
+            - 8000:80
+
+networks:
+    web_network:
+    db_network:

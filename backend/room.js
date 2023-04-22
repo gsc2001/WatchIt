@@ -36,7 +36,7 @@ class Room {
                     delete this.avatarIdMap[key];
                 }
             });
-            if (this.video) {
+            if (this.video && Object.values(this.tsMap).length > 0) {
                 console.log(this.tsMap);
                 this.videoTS = Math.max(...Object.values(this.tsMap));
                 console.log('syncing', this.videoTS);
