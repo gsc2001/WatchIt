@@ -1,9 +1,65 @@
 import React from 'react';
-import { colorMappings } from '../../utils';
-import { Icon } from 'semantic-ui-react';
+
 // import 'firebase/compat/auth';
-import { InviteButton, NewRoomButton } from '../Buttons';
+
+import { serverPath, colorMappings } from '../../utils';
+import { Icon, Button, SemanticSIZES } from 'semantic-ui-react';
+import { InviteButton } from '../Buttons';
 import appStyles from '../App/App.module.css';
+
+export async function createRoom(
+    openNewTab: boolean | undefined,
+    video: string = ''
+) {
+    const response = await window.fetch(serverPath + '/createRoom', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            video,
+        }),
+    });
+    const data = await response.json();
+    const { name } = data;
+    console.log(name);
+
+    if (openNewTab) {
+        window.open('/watch/' + name);
+    } else {
+        window.location.assign('/watch/' + name);
+    }
+}
+
+export class NewRoomButton extends React.Component<{
+    size?: SemanticSIZES;
+    openNewTab?: boolean;
+}> {
+    createRoom = async () => {
+        await createRoom(this.props.openNewTab);
+    };
+    render() {
+        return (
+            <Button
+                size={this.props.size}
+                icon
+                labelPosition="left"
+                onClick={this.createRoom}
+                className={this.props.size ? '' : 'toolButton'}
+                fluid
+                style={{  
+                    backgroundImage:
+                    'linear-gradient( 136deg, rgb(138,35,135) 0%, rgb(233,64,87) 50%, rgb(242,113,33) 100%)',
+                    boxShadow: '0 4px 10px 0 rgba(0,0,0,.25)',
+                    borderRadius: '50px',
+                }}
+            >
+                <Icon name="play" />
+                New Room
+            </Button>
+        );
+    }
+}
 
 export class TopBar extends React.Component<{
     hideNewRoom?: boolean;
@@ -42,22 +98,11 @@ export class TopBar extends React.Component<{
                                 name="film"
                                 size="large"
                                 style={{
-                                    position: 'absolute',
-                                    top: 8,
+                                    // position: 'absolute',
+                                    top: 14,
                                     width: '100%',
-                                    margin: '0 auto',
-                                }}
-                            />
-                            <Icon
-                                inverted
-                                name="group"
-                                size="large"
-                                color="green"
-                                style={{
-                                    position: 'absolute',
-                                    bottom: 8,
-                                    width: '100%',
-                                    margin: '0 auto',
+                                    textAlign: 'center',
+                                    padding: "auto",
                                 }}
                             />
                         </div>

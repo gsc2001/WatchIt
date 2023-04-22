@@ -104,15 +104,20 @@ export const NewRoomButton = (props: {
                 content="Create a new room with a random URL that you can share with friends"
                 trigger={
                     <Button
-                        color="blue"
                         size={props.size}
                         icon
                         labelPosition="left"
                         onClick={() => setNewRoomModalOpen(true)}
                         className={props.size ? '' : 'toolButton'}
                         fluid
+                        style={{
+                            color: 'white',
+                            backgroundImage: 'linear-gradient( 95deg,rgb(138,35,135) 0%,rgb(233,64,87) 50%,rgb(242,113,33) 100%)',
+                            boxShadow: '0 4px 10px 0 rgba(0,0,0,.25)',
+                            borderRadius: '50px',
+                            }}
                     >
-                        <Icon name="certificate" />
+                        <Icon name="play" />
                         New Room
                     </Button>
                 }

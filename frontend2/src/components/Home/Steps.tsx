@@ -4,22 +4,23 @@ import Stack from '@mui/material/Stack';
 import Stepper from '@mui/material/Stepper';
 import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
-import Check from '@mui/icons-material/Check';
-import SettingsIcon from '@mui/icons-material/Settings';
 import GroupAddIcon from '@mui/icons-material/GroupAdd';
 import VideoLabelIcon from '@mui/icons-material/VideoLabel';
+import AddCircleIcon from '@mui/icons-material/AddCircle';
+import ThumbUpIcon from '@mui/icons-material/ThumbUp';
 import StepConnector, { stepConnectorClasses } from '@mui/material/StepConnector';
+import { withStyles } from "@mui/material/styles"
 import { StepIconProps } from '@mui/material/StepIcon';
 
-const ColorlibConnector = styled(StepConnector)(({ theme }) => ({
+const ColorlibConnector = styled(StepConnector)(() => ({
   [`&.${stepConnectorClasses.alternativeLabel}`]: {
     top: 22,
   },
   [`& .${stepConnectorClasses.line}`]: {
     height: 3,
     border: 0,
-      backgroundImage:
-        'linear-gradient( 95deg,rgb(242,113,33) 0%,rgb(233,64,87) 50%,rgb(138,35,135) 100%)',
+    backgroundImage:
+      'linear-gradient( 95deg,rgb(242,113,33) 0%,rgb(233,64,87) 50%,rgb(138,35,135) 100%)',
     borderRadius: 1,
   },
 }));
@@ -32,7 +33,7 @@ const ColorlibStepIconRoot = styled('div')(({ theme }) => ({
   height: 50,
   display: 'flex',
   borderRadius: '50%',
-  justifyContent: 'center',
+  justifyContent: 'space-evenly',
   alignItems: 'center',
   backgroundImage:
     'linear-gradient( 136deg, rgb(242,113,33) 0%, rgb(233,64,87) 50%, rgb(138,35,135) 100%)',
@@ -40,34 +41,36 @@ const ColorlibStepIconRoot = styled('div')(({ theme }) => ({
 }));
 
 function ColorlibStepIcon(props: StepIconProps) {
-  const { className } = props;
 
   const icons: { [index: string]: React.ReactElement } = {
-    1: <SettingsIcon />,
+    1: <AddCircleIcon />,
     2: <GroupAddIcon />,
     3: <VideoLabelIcon />,
-    4: <GroupAddIcon />,
+    4: <ThumbUpIcon />,
   };
 
   return (
-    <ColorlibStepIconRoot className={className}>
+    <ColorlibStepIconRoot >
       {icons[String(props.icon)]}
     </ColorlibStepIconRoot>
   );
 }
 
-const steps = ['Select campaign settings', 'Create an ad group', 'Create an ad', 'tinker around'];
+const WhiteTextLabel = styled(StepLabel)({
+  [`& .MuiStepLabel-label`]: {color: "#FFF"}
+})
+
+
+const steps = ['Make a room', 'Share Link', 'Pick something to watch', 'Have fun!'];
 
 export default function CustomizedSteppers() {
   return (
-    <Stack sx={{ width: '100%' }} spacing={4}>
-      <Stepper alternativeLabel activeStep={1} connector={<ColorlibConnector />}>
+      <Stepper sx={{width: "100%"}} alternativeLabel activeStep={-1} connector={<ColorlibConnector />}>
         {steps.map((label) => (
           <Step key={label}>
-            <StepLabel StepIconComponent={ColorlibStepIcon}>{label}</StepLabel>
+            <WhiteTextLabel StepIconComponent={ColorlibStepIcon}>{label}</WhiteTextLabel>
           </Step>
         ))}
       </Stepper>
-    </Stack>
   );
 }
