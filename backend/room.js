@@ -26,8 +26,8 @@ class Room {
         this.clientIdMap = {};
         this.nameMap = {};
         this.tsMap = {};
-        this.tsInterval = setInterval(() => {
-            const memberIds = this.roster.map(p => p.id);
+        this.syncInterval = setInterval(() => {
+            const memberIds = this.roster.map(p => p.socketId);
             Object.keys(this.tsMap).forEach(key => {
                 if (!memberIds.includes(key)) {
                     delete this.tsMap[key];
@@ -36,8 +36,11 @@ class Room {
                 }
             });
             if (this.video) {
+                console.log(this.tsMap);
+                this.videoTS = Math.max(...Object.values(this.tsMap));
+                console.log('syncing', this.videoTS);
                 this.lastSync = Date.now();
-                io.of(roomId).emit('REC:tsMap', this.tsMap);
+                io.of(roomId).emit('REC:leaderTime', this.videoTS);
             }
         }, 1000);
 
@@ -48,7 +51,7 @@ class Room {
 
             socket.emit('REC:host', this.getState());
             socket.emit('REC:nameMap', this.nameMap);
-            socket.emit('REC:tsMap', this.tsMap);
+            socket.emit('REC:leaderTime', this.videoTS);
             socket.emit('REC:chatinit', this.chatMsgs);
             this.io.of(this.namespace).emit('REC:roster', this.roster);
 
@@ -125,10 +128,10 @@ class Room {
     }
 
     disconnectUser = socket => {
-        let index = this.roster.findIndex(user => user.id === socket.id);
+        let index = this.roster.findIndex(user => user.socketId === socket.id);
         this.roster.splice(index, 1)[0];
+        console.log('disconnected', socket.id);
         this.io.of(this.roomId).emit('roster', this.roster);
-        delete this.tsMap[socket.id];
     };
 
     getState() {

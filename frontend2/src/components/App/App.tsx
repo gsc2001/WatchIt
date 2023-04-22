@@ -85,7 +85,7 @@ interface AppState {
     rosterUpdateTS: Number;
     chat: ChatMessage[];
     playlist: PlaylistVideo[];
-    tsMap: NumberDict;
+    leaderTime: number;
     nameMap: StringDict;
     pictureMap: StringDict;
     myName: string;
@@ -145,7 +145,7 @@ export default class App extends React.Component<AppProps, AppState> {
         rosterUpdateTS: Number(new Date()),
         chat: [],
         playlist: [],
-        tsMap: {},
+        leaderTime: 0,
         nameMap: {},
         pictureMap: {},
         myName: '',
@@ -443,8 +443,8 @@ export default class App extends React.Component<AppProps, AppState> {
             console.log(data);
             this.setState({ nameMap: data });
         });
-        socket.on('REC:tsMap', (data: NumberDict) => {
-            this.setState({ tsMap: data });
+        socket.on('REC:leaderTime', (data: number) => {
+            this.setState({ leaderTime: data });
         });
         socket.on('roster', (data: User[]) => {
             this.setState({
@@ -903,22 +903,7 @@ export default class App extends React.Component<AppProps, AppState> {
 
     localSeek = (customTime?: number) => {
         // Jump to the leader's position, or a custom one
-        // for HLS the leader is the live stream position
-        let target = customTime ?? this.getLeaderTime();
-        if (this.state.isLiveHls) {
-            console.log('syncing self for livehls');
-            if (customTime) {
-                // Translate the time back to video time
-                // TODO Safari reports the duration as Infinity, so keep track of our duration using the max of our current timestamp
-                const zeroTime =
-                    Math.floor(Date.now() / 1000) -
-                    this.HTMLInterface.getDuration();
-                // Cap the time to the leadertime so we don't try to seek too close to edge
-                target = Math.min(customTime - zeroTime, this.getLeaderTime());
-            } else {
-                target = this.getLeaderTime();
-            }
-        }
+        let target = customTime ?? this.state.leaderTime;
         if (target >= 0 && target < Infinity) {
             console.log('syncing self to leader or custom:', target);
             this.Player().seekVideo(target);
@@ -1150,17 +1135,6 @@ export default class App extends React.Component<AppProps, AppState> {
         this.setState({ loading: false });
     };
 
-    getLeaderTime = () => {
-        if (this.state.isLiveHls) {
-            // Pick a time near the end of the livestream
-            return this.HTMLInterface.getDuration() - 5;
-        }
-        if (this.state.participants.length > 2) {
-            return calculateMedian(Object.values(this.state.tsMap));
-        }
-        return Math.max(...Object.values(this.state.tsMap));
-    };
-
     onVideoEnded = () => {
         this.localPause();
         // check if looping is on, if so set time back to 0 and restart
@@ -1206,9 +1180,7 @@ export default class App extends React.Component<AppProps, AppState> {
                 subtitled={this.Player().isSubtitled()}
                 currentTime={this.Player().getCurrentTime()}
                 duration={this.Player().getDuration()}
-                leaderTime={
-                    this.hasDuration() ? this.getLeaderTime() : undefined
-                }
+                leaderTime={this.state.leaderTime}
                 playbackRate={this.Player().getPlaybackRate()}
                 isYouTube={this.usingYoutube()}
                 timeRanges={this.Player().getTimeRanges()}

@@ -42,6 +42,7 @@ const NewRoomModal = ({
 
     const [name, setName] = useState('');
     const [isPrivate, setIsPrivate] = useState(false);
+    const [passCode, setPassCode] = useState('');
 
     useEffect(() => {
         const name = localStorage.getItem('watchit_username');
@@ -78,6 +79,19 @@ const NewRoomModal = ({
                             checked={isPrivate}
                         />
                     </Form.Field>
+                    {isPrivate ? (
+                        <Form.Field>
+                            <Form.Input
+                                // label="Passcode"
+                                value={passCode}
+                                onChange={e => setPassCode(e.target.value)}
+                                action={{
+                                    content: 'Passcode',
+                                }}
+                                // actionPosition="left"
+                            />
+                        </Form.Field>
+                    ) : null}
                     <center>
                         <Button type="submit" onClick={() => createRoom(true)}>
                             Submit
