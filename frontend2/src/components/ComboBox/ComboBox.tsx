@@ -5,9 +5,7 @@ import { DropdownProps, Form, Input, Label } from 'semantic-ui-react';
 interface ComboBoxProps {
     roomSetMedia: (data: DropdownProps) => void;
     roomMedia: string;
-    mediaPath: string | undefined;
     streamPath: string | undefined;
-    playlist: PlaylistVideo[];
 }
 
 export class ComboBox extends React.Component<ComboBoxProps> {

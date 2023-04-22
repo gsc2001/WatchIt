@@ -3,16 +3,12 @@ import { Comment, Divider, Form, Input } from 'semantic-ui-react';
 import { init } from 'emoji-mart';
 import styles from './Chat.module.css';
 
-import {
-    formatTimestamp,
-    isEmojiString,
-} from '../../utils';
+import { formatTimestamp, isEmojiString } from '../../utils';
 import { Socket } from 'socket.io-client';
 import classes from './Chat.module.css';
 
 interface ChatProps {
     chat: ChatMessage[];
-    pictureMap: StringDict;
     socket: Socket;
     scrollTimestamp: number;
     className?: string;
@@ -43,7 +39,7 @@ const avatarArray = [
     'https://react.semantic-ui.com/images/avatar/small/helen.jpg',
     'https://react.semantic-ui.com/images/avatar/small/justen.jpg',
     'https://react.semantic-ui.com/images/avatar/small/kristy.jpg',
-]
+];
 
 export class Chat extends React.Component<ChatProps> {
     public state = {
@@ -127,7 +123,7 @@ export class Chat extends React.Component<ChatProps> {
         } else if (cmd == 'join') {
             return `${msg} joined the room`;
         } else if (cmd == 'left') {
-            return `${msg} left the room`; 
+            return `${msg} left the room`;
         }
 
         return cmd;
@@ -136,7 +132,6 @@ export class Chat extends React.Component<ChatProps> {
     addEmoji = (emoji: any) => {
         this.setState({ chatMsg: this.state.chatMsg + emoji.native });
     };
-
 
     render() {
         return (
@@ -150,7 +145,7 @@ export class Chat extends React.Component<ChatProps> {
                     marginTop: 0,
                     marginBottom: 0,
                     padding: '8px',
-                    borderRadius: "2%",
+                    borderRadius: '2%',
                     // backgroundImage: 'linear-gradient( 0deg, rgb(0, 2, 5) 0%, rgb(136, 136, 136) 100%)',
                 }}
             >
@@ -164,7 +159,6 @@ export class Chat extends React.Component<ChatProps> {
                             <ChatMessage
                                 key={idx}
                                 message={msg}
-                                pictureMap={this.props.pictureMap}
                                 formatMessage={this.formatMessage}
                             />
                         ))}
@@ -197,11 +191,9 @@ const ChatMessage = ({
     formatMessage,
 }: {
     message: ChatMessage;
-    pictureMap: StringDict;
     formatMessage: (cmd: string, msg: string) => React.ReactNode;
 }) => {
     const { senderName, avatarId, timestamp, cmd, msg } = message;
-    console.log('avatarId', avatarId)
     return (
         <Comment className={`${classes.comment}`}>
             <div style={{ display: 'flex' }}>
@@ -214,11 +206,21 @@ const ChatMessage = ({
                         marginLeft: '1em',
                     }}
                 />
-                <div style={{flex: 1}}>
-                    <div style={{ display: 'flex' , marginRight: '2rem', justifyContent: 'space-between'}}>
-                        <Comment.Author className={styles.light}>{senderName}</Comment.Author>
+                <div style={{ flex: 1 }}>
+                    <div
+                        style={{
+                            display: 'flex',
+                            marginRight: '2rem',
+                            justifyContent: 'space-between',
+                        }}
+                    >
+                        <Comment.Author className={styles.light}>
+                            {senderName}
+                        </Comment.Author>
                         <Comment.Metadata className={styles.light}>
-                            <div title={new Date(timestamp).toLocaleDateString()}>
+                            <div
+                                title={new Date(timestamp).toLocaleDateString()}
+                            >
                                 {new Date(timestamp).toLocaleTimeString()}
                             </div>
                         </Comment.Metadata>

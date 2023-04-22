@@ -53,59 +53,26 @@ interface AppProps {
 interface AppState {
     state: 'init' | 'starting' | 'connected';
     roomMedia: string;
-    roomSubtitle: string;
     roomPaused: boolean;
-    roomLoop: boolean;
     participants: User[];
-    rosterUpdateTS: Number;
     chat: ChatMessage[];
-    playlist: PlaylistVideo[];
     leaderTime: number;
-    pictureMap: StringDict;
     myName: string;
-    myPicture: string;
     loading: boolean;
     scrollTimestamp: number;
-    unreadCount: number;
     fullScreen: boolean;
+    unreadCount: number;
     controlsTimestamp: number;
-    watchOptions: SearchResult[];
     isAutoPlayable: boolean;
-    downloaded: number;
-    total: number;
-    speed: number;
-    connections: number;
-    multiStreamSelection?: {
-        name: string;
-        url: string;
-        length: number;
-        playFn?: () => void;
-    }[];
     overlayMsg: string;
     isErrorAuth: boolean;
     settings: Settings;
-    nonPlayableMedia: boolean;
-    currentTab: string;
-    isSubtitleModalOpen: boolean;
-    roomLock: string;
-    controller?: string;
-    savedPasswords: StringDict;
     roomId: string;
     errorMessage: string;
     successMessage: string;
     warningMessage: string;
-    isChatDisabled: boolean;
     showRightBar: boolean;
-    owner: string | undefined;
-    vanity: string | undefined;
-    password: string | undefined;
     inviteLink: string;
-    roomTitle: string | undefined;
-    roomDescription: string | undefined;
-    roomTitleColor: string | undefined;
-    mediaPath: string | undefined;
-    roomPlaybackRate: number;
-    isLiveHls: boolean;
     isNameSet: boolean;
     isPrivate: boolean;
 }
@@ -115,54 +82,25 @@ export default class App extends React.Component<AppProps, AppState> {
         state: 'starting',
         roomMedia: '',
         roomPaused: false,
-        roomSubtitle: '',
-        roomLoop: false,
+        fullScreen: false,
         participants: [],
-        rosterUpdateTS: Number(new Date()),
         chat: [],
-        playlist: [],
         leaderTime: 0,
-        pictureMap: {},
         myName: '',
-        myPicture: '',
         loading: true,
         scrollTimestamp: 0,
         unreadCount: 0,
-        fullScreen: false,
         controlsTimestamp: 0,
-        watchOptions: [],
         isAutoPlayable: true,
-        downloaded: 0,
-        total: 0,
-        speed: 0,
-        connections: 0,
-        multiStreamSelection: undefined,
         overlayMsg: '',
         isErrorAuth: false,
         settings: {},
-        nonPlayableMedia: false,
-        currentTab:
-            new URLSearchParams(window.location.search).get('tab') ?? 'chat',
-        isSubtitleModalOpen: false,
-        roomLock: '',
-        controller: '',
         roomId: '',
-        savedPasswords: {},
         errorMessage: '',
         successMessage: '',
         warningMessage: '',
-        isChatDisabled: false,
         showRightBar: true,
-        owner: undefined,
-        vanity: undefined,
-        password: undefined,
         inviteLink: '',
-        roomTitle: '',
-        roomDescription: '',
-        roomTitleColor: '',
-        mediaPath: undefined,
-        roomPlaybackRate: 0,
-        isLiveHls: false,
         isNameSet: false,
         isPrivate: false,
     };
@@ -257,7 +195,8 @@ export default class App extends React.Component<AppProps, AppState> {
                 warningMessage: '',
             });
             // Load username from localstorage
-            let userName = window.localStorage.getItem('watchit_username') || '';
+            let userName =
+                window.localStorage.getItem('watchit_username') || '';
             if (userName !== '') {
                 this.setState({ isNameSet: true });
                 toast.success('Joined room!');
@@ -287,21 +226,6 @@ export default class App extends React.Component<AppProps, AppState> {
                 this.setState({ warningMessage: 'Reconnecting...' });
             }
         });
-        socket.on('errorMessage', (err: string) => {
-            this.setState({ errorMessage: err });
-            setTimeout(() => {
-                this.setState({ errorMessage: '' });
-            }, 3000);
-        });
-        socket.on('successMessage', (success: string) => {
-            this.setState({ successMessage: success });
-            setTimeout(() => {
-                this.setState({ successMessage: '' });
-            }, 3000);
-        });
-        socket.on('kicked', () => {
-            window.location.assign('/');
-        });
         socket.on('REC:play', () => {
             this.localPlay();
         });
@@ -310,23 +234,6 @@ export default class App extends React.Component<AppProps, AppState> {
         });
         socket.on('REC:seek', (data: number) => {
             this.localSeek(data);
-        });
-        socket.on('REC:playbackRate', (data: number) => {
-            this.setState({ roomPlaybackRate: data });
-            if (data > 0) {
-                this.Player().setPlaybackRate(data);
-            }
-        });
-        socket.on('REC:subtitle', (data: string) => {
-            this.setState({ roomSubtitle: data }, () => {
-                this.Player().loadSubtitles(data);
-            });
-        });
-        socket.on('REC:loop', (data: boolean) => {
-            this.setState({ roomLoop: data });
-        });
-        socket.on('REC:changeController', (data: string) => {
-            this.setState({ controller: data });
         });
         socket.on('REC:host', async (data: HostState) => {
             let currentMedia = data.video || '';
@@ -368,26 +275,13 @@ export default class App extends React.Component<AppProps, AppState> {
                         'canplay',
                         () => {
                             this.setLoadingFalse();
-                            this.localSeek(
-                                this.state.isLiveHls ? data.videoTS : undefined
-                            );
-                            if (data.playbackRate) {
-                                // Set playback rate again since it might have been lost
-                                console.log(
-                                    'setting playback rate again',
-                                    data.playbackRate
-                                );
-                                this.Player().setPlaybackRate(
-                                    data.playbackRate
-                                );
-                            }
+                            this.localSeek(undefined);
                         },
                         { once: true }
                     );
 
                     // Progress updater
                     window.clearInterval(this.progressUpdater);
-                    this.setState({ downloaded: 0, total: 0, speed: 0 });
                 }
             );
         });
@@ -397,10 +291,6 @@ export default class App extends React.Component<AppProps, AppState> {
             this.setState({
                 chat: this.state.chat,
                 scrollTimestamp: Number(new Date()),
-                unreadCount:
-                    this.state.currentTab === 'chat'
-                        ? this.state.unreadCount
-                        : this.state.unreadCount + 1,
             });
         });
         socket.on('REC:leaderTime', (data: number) => {
@@ -409,14 +299,10 @@ export default class App extends React.Component<AppProps, AppState> {
         socket.on('roster', (data: User[]) => {
             this.setState({
                 participants: data,
-                rosterUpdateTS: Number(new Date()),
             });
         });
         socket.on('REC:chatinit', (data: ChatMessage[]) => {
             this.setState({ chat: data, scrollTimestamp: Number(new Date()) });
-        });
-        socket.on('playlist', (data: PlaylistVideo[]) => {
-            this.setState({ playlist: data });
         });
         window.setInterval(() => {
             if (this.state.roomMedia) {
@@ -485,42 +371,8 @@ export default class App extends React.Component<AppProps, AppState> {
         };
     };
 
-    setOwner = (owner: string) => {
-        this.setState({ owner });
-    };
-    setVanity = (vanity: string | undefined) => {
-        this.setState({ vanity });
-    };
-    setPassword = (password: string | undefined) => {
-        this.setState({ password });
-    };
     setInviteLink = (inviteLink: string) => {
         this.setState({ inviteLink });
-    };
-    setRoomTitle = (roomTitle: string | undefined) => {
-        this.setState({ roomTitle });
-    };
-    setRoomDescription = (roomDescription: string | undefined) => {
-        this.setState({ roomDescription });
-    };
-    setRoomTitleColor = (roomTitleColor: string | undefined) => {
-        this.setState({ roomTitleColor });
-    };
-    setMediaPath = (mediaPath: string | undefined) => {
-        this.setState({ mediaPath });
-    };
-
-    setIsChatDisabled = (val: boolean) =>
-        this.setState({ isChatDisabled: val });
-
-    changeController = async (_e: any, data: DropdownProps) => {
-        // console.log(data);
-        this.socket.emit('CMD:changeController', data.value);
-    };
-
-    sendSignalSS = async (to: string, data: any, sharer?: boolean) => {
-        // console.log('sendSS', to, data);
-        this.socket.emit('signalSS', { to, msg: data, sharer });
     };
 
     usingYoutube = () => {
@@ -564,12 +416,6 @@ export default class App extends React.Component<AppProps, AppState> {
                     await this.Player().playVideo();
                 } catch (e: any) {
                     console.warn(e, e.name);
-                    if (e.name === 'NotSupportedError' && this.usingNative()) {
-                        this.setState({
-                            loading: false,
-                            nonPlayableMedia: true,
-                        });
-                    }
                 }
             }
         );
@@ -626,7 +472,7 @@ export default class App extends React.Component<AppProps, AppState> {
             Math.floor(Date.now() / 1000) -
             this.HTMLInterface.getDuration() +
             target;
-        this.socket.emit('CMD:seek', this.state.isLiveHls ? hlsTarget : target);
+        this.socket.emit('CMD:seek', target);
     };
 
     onFullScreenChange = () => {
@@ -638,6 +484,7 @@ export default class App extends React.Component<AppProps, AppState> {
             !document.activeElement ||
             document.activeElement.tagName === 'BODY'
         ) {
+            console.log('key pressed', e);
             if (e.key === ' ') {
                 e.preventDefault();
                 this.roomTogglePlay();
@@ -718,27 +565,7 @@ export default class App extends React.Component<AppProps, AppState> {
     onVideoEnded = () => {
         this.localPause();
         // check if looping is on, if so set time back to 0 and restart
-        if (this.state.roomLoop) {
-            this.localSeek(0);
-            this.localPlay();
-            return;
-        }
-        if (this.state.playlist.length) {
-            this.socket.emit('CMD:playlistNext', this.state.roomMedia);
-            return;
-        }
         // Play next fileIndex
-        const re = /&fileIndex=(\d+)$/;
-        const match = re.exec(this.state.roomMedia);
-        if (match) {
-            const fileIndex = match[1];
-            const nextNum = Number(fileIndex) + 1;
-            const nextUrl = this.state.roomMedia.replace(
-                /&fileIndex=(\d+)$/,
-                `&fileIndex=${nextNum}`
-            );
-            this.roomSetMedia({ value: nextUrl });
-        }
     };
 
     refreshControls = () => {
@@ -769,15 +596,14 @@ export default class App extends React.Component<AppProps, AppState> {
                         : styles.fullHeightColumn
                 }`}
             >
-                <p style={{marginLeft: '1.3em', color: 'white' }}>Nickname: {this.state.myName}</p>
+                <p style={{ marginLeft: '1.3em', color: 'white' }}>
+                    Nickname: {this.state.myName}
+                </p>
                 <Chat
                     chat={this.state.chat}
-                    pictureMap={this.state.pictureMap}
                     socket={this.socket}
                     scrollTimestamp={this.state.scrollTimestamp}
-                    hide={
-                        this.state.currentTab !== 'chat' || !displayRightContent
-                    }
+                    hide={!displayRightContent}
                     ref={this.chatRef}
                 />
                 {this.state.state === 'connected'}
@@ -834,12 +660,7 @@ export default class App extends React.Component<AppProps, AppState> {
                         }}
                     ></Message>
                 )}
-                <TopBar
-                    roomTitle={this.state.roomTitle}
-                    roomDescription={this.state.roomDescription}
-                    roomTitleColor={this.state.roomTitleColor}
-                    showInviteButton
-                />
+                <TopBar showInviteButton />
                 {
                     <Grid stackable celled="internally">
                         <Grid.Row id="theaterContainer">
@@ -866,8 +687,6 @@ export default class App extends React.Component<AppProps, AppState> {
                                                 streamPath={
                                                     this.props.streamPath
                                                 }
-                                                mediaPath={this.state.mediaPath}
-                                                playlist={this.state.playlist}
                                             />
                                             <Separator />
                                             <div
@@ -882,34 +701,6 @@ export default class App extends React.Component<AppProps, AppState> {
                                     )}
                                     <div style={{ flexGrow: 1 }}>
                                         <div className={styles.playerContainer}>
-                                            {(this.state.loading ||
-                                                !this.state.roomMedia ||
-                                                this.state
-                                                    .nonPlayableMedia) && (
-                                                <div
-                                                    id="loader"
-                                                    className={
-                                                        styles.videoContent
-                                                    }
-                                                    style={{
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        justifyContent:
-                                                            'center',
-                                                    }}
-                                                >
-                                                    {!this.state.loading &&
-                                                        this.state
-                                                            .nonPlayableMedia && (
-                                                            <Message
-                                                                color="red"
-                                                                icon="frown"
-                                                                header="It doesn't look like this is a media file!"
-                                                                content="Maybe you meant to launch a VBrowser if you're trying to visit a web page?"
-                                                            />
-                                                        )}
-                                                </div>
-                                            )}
                                             <iframe
                                                 style={{
                                                     display:
@@ -929,29 +720,6 @@ export default class App extends React.Component<AppProps, AppState> {
                                         </div>
                                     </div>
                                     {this.state.roomMedia && controls}
-                                    {Boolean(this.state.total) && (
-                                        <div
-                                            style={{
-                                                color: 'white',
-                                                textAlign: 'center',
-                                                fontSize: 11,
-                                                fontWeight: 700,
-                                                marginTop: -10,
-                                            }}
-                                        >
-                                            {Math.min(
-                                                (this.state.downloaded /
-                                                    this.state.total) *
-                                                    100,
-                                                100
-                                            ).toFixed(2) +
-                                                '% - ' +
-                                                formatSpeed(this.state.speed) +
-                                                ' - ' +
-                                                this.state.connections +
-                                                ' connections'}
-                                        </div>
-                                    )}
                                 </div>
                             </Grid.Column>
                             {rightBar}
