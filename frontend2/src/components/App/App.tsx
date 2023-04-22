@@ -11,7 +11,6 @@ import {
     serverPath,
     testAutoplay,
 } from '../../utils';
-import { generateName } from '../../utils/generateName';
 import { Chat } from '../Chat';
 import { ComboBox } from '../ComboBox/ComboBox';
 import { Controls } from '../Controls/Controls';

@@ -9,7 +9,7 @@ export const ErrorModal = ({ error }: { error: string }) => {
       </Header>
       <div style={{ display: 'flex', justifyContent: 'center' }}>
         <Button
-          primary
+          style={{color:'#e94057'}}
           size="huge"
           onClick={() => {
             window.location.href = '/';

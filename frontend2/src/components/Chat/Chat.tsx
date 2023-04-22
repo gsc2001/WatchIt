@@ -1,5 +1,5 @@
-import React, { RefObject } from 'react';
-import { Comment, Form, Input } from 'semantic-ui-react';
+import React, { RefObject, useState } from 'react';
+import { Comment, Divider, Form, Input } from 'semantic-ui-react';
 import { init } from 'emoji-mart';
 import styles from './Chat.module.css';
 
@@ -95,12 +95,14 @@ export class Chat extends React.Component<ChatProps> {
     };
 
     formatMessage = (cmd: string, msg: string): React.ReactNode | string => {
-         if (cmd === 'seek') {
+        if (cmd === 'seek') {
             return `jumped to ${formatTimestamp(msg)}`;
         } else if (cmd === 'play') {
             return `started the video at ${formatTimestamp(msg)}`;
         } else if (cmd === 'pause') {
             return `paused the video at ${formatTimestamp(msg)}`;
+        } else if (cmd == 'join') {
+            return `${msg} joined the room`
         }
         return cmd;
     };
@@ -189,38 +191,45 @@ const ChatMessage = ({
     const spellFull = 5; // the number of people whose names should be written out in full in the reaction popup
     return (
         <Comment className={`${classes.comment} ${className}`}>
-            {id ? (
+            <div style={{ display: 'flex' }}>
                 <Comment.Avatar
-                    className=''
-                    src={
-                        pictureMap[id] ||
-                        getDefaultPicture(
-                            nameMap[id],
-                            getColorForStringHex(id)
-                        )
-                    }
+                    src={`/im${7}.jpg`}
+                    style={{
+                        marginRight: '2em',
+                        width: '4em',
+                        height: '4em',
+                    }}
                 />
-            ) : null}
-            <Comment.Author as='a'>{id}</Comment.Author>
-            <Comment.Content>
-                <Comment.Metadata className={styles.dark}>
-                    <div title={new Date(timestamp).toLocaleDateString()}>
-                        {new Date(timestamp).toLocaleTimeString()}
-                        {Boolean(videoTS) && ' @ '}
-                        {formatTimestamp(videoTS)}
+                <div style={{flex: 1}}>
+                    <div style={{ display: 'flex' , marginRight: '2rem', justifyContent: 'space-between'}}>
+                        <Comment.Author as="a">{id}</Comment.Author>
+                        <Comment.Metadata className={styles.dark}>
+                            <div
+                                title={new Date(timestamp).toLocaleDateString()}
+                            >
+                                {new Date(timestamp).toLocaleTimeString()}
+                                {Boolean(videoTS) && ' @ '}
+                                {formatTimestamp(videoTS)}
+                            </div>
+                        </Comment.Metadata>
                     </div>
-                </Comment.Metadata>
-                <Comment.Text className={styles.light + ' ' + styles.system}>
-                    {cmd && formatMessage(cmd, msg)}
-                </Comment.Text>
-                <Comment.Text
-                        className={`${styles.light} ${
-                            isEmojiString(msg) ? styles.emoji : ''
-                        }`}
-                    >
-                        {!cmd && msg}
-                    </Comment.Text>
-            </Comment.Content>
+                    <Comment.Content>
+                        <Comment.Text
+                            className={styles.light + ' ' + styles.system}
+                        >
+                            {cmd && formatMessage(cmd, msg)}
+                        </Comment.Text>
+                        <Comment.Text
+                            className={`${styles.light} ${
+                                isEmojiString(msg) ? styles.emoji : ''
+                            }`}
+                        >
+                            {!cmd && msg}
+                        </Comment.Text>
+                    </Comment.Content>
+                </div>
+            </div>
+            <Divider />
         </Comment>
     );
 };

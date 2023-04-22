@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Modal, Form, Button } from 'semantic-ui-react';
 import { savePasscode } from '../../utils/passcode';
 
@@ -9,13 +9,19 @@ export const NamePasscodeModal = ({
     roomId: string;
     isPrivate: boolean;
 }) => {
-    const [name, setName] = useState(
-        window.localStorage.getItem('watchit_username') || ''
-    );
+
+    useEffect(() =>{
+        const temp_name = window.localStorage.getItem('watchit_username')
+        if (temp_name && temp_name != name){
+            setName(JSON.parse(temp_name)) 
+        }
+    }, [])
+    
+    const [name, setName] = useState('')
     const [passcode, setPasscode] = useState('');
 
     const saveNameAndPasscode = () => {
-        window.localStorage.setItem('watchit_username', name);
+        window.localStorage.setItem('watchit_username', JSON.stringify(name));
 
         if (isPrivate) {
             savePasscode(roomId, passcode);
@@ -24,9 +30,9 @@ export const NamePasscodeModal = ({
     };
 
     return (
-        <Modal inverted="true" basic open>
+        <Modal open centered={false} size="tiny">
             <Modal.Header as="h1" style={{ textAlign: 'center' }}>
-                Enter details bellow
+                Fill your Name
             </Modal.Header>
             <Modal.Content>
                 <Form>

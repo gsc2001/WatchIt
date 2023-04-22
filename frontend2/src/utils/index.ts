@@ -111,9 +111,6 @@ export function getColorForStringHex(id: string) {
   return colorMappings[getColorForString(id)];
 }
 
-export const getFbPhoto = (fbId: string) =>
-  `https://graph.facebook.com/${fbId}/picture?type=normal`;
-
 export const isYouTube = (input: string) => {
   return (
     input.startsWith('https://www.youtube.com/') ||
@@ -130,38 +127,6 @@ export const getDefaultPicture = (name: string, background = 'a0a0a0') => {
   return `https://ui-avatars.com/api/?name=${name}&background=${background}&size=256&color=ffffff`;
 };
 
-export const isMobile = () => {
-  return window.screen.width <= 600;
-};
-
-export function shuffle(array: any[]) {
-  for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * i);
-    const temp = array[i];
-    array[i] = array[j];
-    array[j] = temp;
-  }
-}
-
-export const iceServers = () => [
-  { urls: 'stun:stun.l.google.com:19302' },
-  {
-    urls: 'turn:5.161.49.183:3478',
-    username: 'username',
-    credential: 'password',
-  },
-  {
-    urls: 'turn:135.181.147.65:3478',
-    username: 'username',
-    credential: 'password',
-  },
-  {
-    urls: 'turn:numb.viagenie.ca',
-    credential: 'watchparty',
-    username: 'howardzchung@gmail.com',
-  },
-];
-
 export const serverPath = '/api'
 export const ioPath = '/'
   // process.env.REACT_APP_SERVER_HOST ||
@@ -171,43 +136,6 @@ export const ioPath = '/'
   //     : `${window.location.hostname}:8080`
   // }`;
 
-export async function getMediaPathResults(
-  mediaPath: string,
-  query: string
-): Promise<SearchResult[]> {
-  const response = await window.fetch(mediaPath);
-  let results: SearchResult[] = [];
-  if (mediaPath.includes('s3.')) {
-    // S3-style buckets return data in XML
-    const xml = await response.text();
-    const parser = new XMLParser();
-    const data = parser.parse(xml);
-    let filtered = data.ListBucketResult.Contents.filter(
-      // Exclude subdirectories
-      (file: any) => !file.Key.includes('/')
-    );
-    results = filtered.map((file: any) => ({
-      url: mediaPath + '/' + file.Key,
-      name: mediaPath + '/' + file.Key,
-    }));
-  } else {
-    // nginx with autoindex_format json;
-    const data = await response.json();
-    results = data
-      .filter((file: any) => file.type === 'file')
-      .map((file: any) => ({
-        url: mediaPath + '/' + file.name,
-        name: mediaPath + '/' + file.name,
-      }));
-  }
-  results = results.filter(
-    (option: SearchResult) =>
-      // Exclude subtitles
-      !option.url.endsWith('.srt') &&
-      option.name.toLowerCase().includes(query.toLowerCase())
-  );
-  return results;
-}
 
 export async function getStreamPathResults(
   streamPath: string,
