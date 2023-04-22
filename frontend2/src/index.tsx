@@ -11,7 +11,7 @@ import { TopBar } from './components/TopBar/TopBar';
 import * as serviceWorker from './serviceWorker';
 import 'semantic-ui-css/semantic.min.css';
 
-class WatchParty extends React.Component {
+class WatchIt extends React.Component {
     public state = {
         // user: undefined as firebase.User | undefined,
         isSubscriber: false,
@@ -61,7 +61,7 @@ class WatchParty extends React.Component {
 }
 const container = document.getElementById('root');
 const root = createRoot(container!);
-root.render(<WatchParty />);
+root.render(<WatchIt />);
 
 // If you want your app to work offline and load faster, you can change
 // unregister() to register() below. Note this comes with some pitfalls.

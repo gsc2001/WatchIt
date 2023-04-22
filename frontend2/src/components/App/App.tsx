@@ -27,7 +27,7 @@ declare global {
     interface Window {
         onYouTubeIframeAPIReady: any;
         YT: YT.JsApi;
-        watchparty: {
+        watchit: {
             ourStream: MediaStream | undefined;
             videoRefs: HTMLVideoElementDict;
             videoPCs: PCDict;
@@ -36,7 +36,7 @@ declare global {
     }
 }
 
-window.watchparty = {
+window.watchit = {
     ourStream: undefined,
     videoRefs: {},
     videoPCs: {},
@@ -660,8 +660,6 @@ export default class App extends React.Component<AppProps, AppState> {
             'theaterContainer'
         ) as HTMLElement;
         if (bVideoOnly) {
-            // Can't really control the VBrowser on mobile anyway, so just fullscreen the video
-            // https://github.com/howardchung/watchparty/issues/208
             container = document.getElementById(
                 'leftVideoParent'
             ) as HTMLElement;
@@ -771,7 +769,7 @@ export default class App extends React.Component<AppProps, AppState> {
                         : styles.fullHeightColumn
                 }`}
             >
-                <p style={{ color: 'white' }}>Name: {this.state.myName}</p>
+                <p style={{marginLeft: '1.3em', color: 'white' }}>Nickname: {this.state.myName}</p>
                 <Chat
                     chat={this.state.chat}
                     pictureMap={this.state.pictureMap}

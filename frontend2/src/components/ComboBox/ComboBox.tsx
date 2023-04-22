@@ -43,14 +43,16 @@ export class ComboBox extends React.Component<ComboBoxProps> {
                         >
                             <Label
                                 style={{
-                                    backgroundColor: '#e94057',
+                                    // backgroundColor: '#e94057',
                                     color: 'white',
                                     fontSize: '1em',
                                     marginBottom: 0,
                                     paddingBottom: 0,
                                     paddingTop: 0,
                                     display: 'flex',
-                                    alignItems: 'center'
+                                    alignItems: 'center',
+                                    backgroundImage: 'linear-gradient( 95deg,rgb(242,113,33) 0%,rgb(233,64,87) 50%,rgb(138,35,135) 100%)',
+
                                 }}
                             >
                                 Now Watching

@@ -5,8 +5,6 @@ import styles from './Chat.module.css';
 
 import {
     formatTimestamp,
-    getColorForStringHex,
-    getDefaultPicture,
     isEmojiString,
 } from '../../utils';
 import { Socket } from 'socket.io-client';
@@ -21,6 +19,31 @@ interface ChatProps {
     hide?: boolean;
     ref: RefObject<Chat>;
 }
+
+const avatarArray = [
+    'https://react.semantic-ui.com/images/avatar/small/matt.jpg',
+    'https://react.semantic-ui.com/images/avatar/small/elliot.jpg',
+    'https://react.semantic-ui.com/images/avatar/small/jenny.jpg',
+    'https://react.semantic-ui.com/images/avatar/small/joe.jpg',
+    'https://react.semantic-ui.com/images/avatar/small/justen.jpg',
+    'https://react.semantic-ui.com/images/avatar/small/laura.jpg',
+    'https://react.semantic-ui.com/images/avatar/small/lena.jpg',
+    'https://react.semantic-ui.com/images/avatar/small/lindsay.jpg',
+    'https://react.semantic-ui.com/images/avatar/small/mark.jpg',
+    'https://react.semantic-ui.com/images/avatar/small/matthew.png',
+    'https://react.semantic-ui.com/images/avatar/small/molly.png',
+    'https://react.semantic-ui.com/images/avatar/small/nan.jpg',
+    'https://react.semantic-ui.com/images/avatar/small/steve.jpg',
+    'https://react.semantic-ui.com/images/avatar/small/stevie.jpg',
+    'https://react.semantic-ui.com/images/avatar/small/veronika.jpg',
+    'https://react.semantic-ui.com/images/avatar/small/zoe.jpg',
+    'https://react.semantic-ui.com/images/avatar/small/ade.jpg',
+    'https://react.semantic-ui.com/images/avatar/small/christian.jpg',
+    'https://react.semantic-ui.com/images/avatar/small/daniel.jpg',
+    'https://react.semantic-ui.com/images/avatar/small/helen.jpg',
+    'https://react.semantic-ui.com/images/avatar/small/justen.jpg',
+    'https://react.semantic-ui.com/images/avatar/small/kristy.jpg',
+]
 
 export class Chat extends React.Component<ChatProps> {
     public state = {
@@ -103,13 +126,17 @@ export class Chat extends React.Component<ChatProps> {
             return `paused the video at ${formatTimestamp(msg)}`;
         } else if (cmd == 'join') {
             return `${msg} joined the room`;
+        } else if (cmd == 'left') {
+            return `${msg} left the room`; 
         }
+
         return cmd;
     };
 
     addEmoji = (emoji: any) => {
         this.setState({ chatMsg: this.state.chatMsg + emoji.native });
     };
+
 
     render() {
         return (
@@ -123,6 +150,8 @@ export class Chat extends React.Component<ChatProps> {
                     marginTop: 0,
                     marginBottom: 0,
                     padding: '8px',
+                    borderRadius: "2%",
+                    // backgroundImage: 'linear-gradient( 0deg, rgb(0, 2, 5) 0%, rgb(136, 136, 136) 100%)',
                 }}
             >
                 <div
@@ -165,7 +194,6 @@ export class Chat extends React.Component<ChatProps> {
 
 const ChatMessage = ({
     message,
-    pictureMap,
     formatMessage,
 }: {
     message: ChatMessage;
@@ -173,31 +201,25 @@ const ChatMessage = ({
     formatMessage: (cmd: string, msg: string) => React.ReactNode;
 }) => {
     const { senderName, avatarId, timestamp, cmd, msg } = message;
-    const spellFull = 5; // the number of people whose names should be written out in full in the reaction popup
+    console.log('avatarId', avatarId)
     return (
         <Comment className={`${classes.comment}`}>
             <div style={{ display: 'flex' }}>
                 <Comment.Avatar
-                    src={`/im${avatarId}.jpg`}
+                    src={`${avatarArray[avatarId % avatarArray.length]}`}
                     style={{
-                        marginRight: '2em',
-                        width: '4em',
-                        height: '4em',
+                        marginRight: '1em',
+                        width: '3em',
+                        height: '3em',
+                        marginLeft: '1em',
+                        borderRadius: '50px'
                     }}
                 />
-                <div style={{ flex: 1 }}>
-                    <div
-                        style={{
-                            display: 'flex',
-                            marginRight: '2rem',
-                            justifyContent: 'space-between',
-                        }}
-                    >
-                        <Comment.Author>{senderName}</Comment.Author>
-                        <Comment.Metadata className={styles.dark}>
-                            <div
-                                title={new Date(timestamp).toLocaleDateString()}
-                            >
+                <div style={{flex: 1}}>
+                    <div style={{ display: 'flex' , marginRight: '2rem', justifyContent: 'space-between'}}>
+                        <Comment.Author className={styles.light}>{senderName}</Comment.Author>
+                        <Comment.Metadata className={styles.light}>
+                            <div title={new Date(timestamp).toLocaleDateString()}>
                                 {new Date(timestamp).toLocaleTimeString()}
                             </div>
                         </Comment.Metadata>

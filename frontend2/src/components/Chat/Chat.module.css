@@ -75,21 +75,7 @@
   cursor: pointer;
 }
 
-.comment .commentMenu:hover,
-.comment.selected .commentMenu {
-  background: rgb(46, 137, 212);
-  transition: background 0.2s ease-in-out;
-}
 
-.comment:hover,
-.comment.selected {
-  border-radius: 5px;
-  background: radial-gradient(
-    at top right,
-    #7eaee02a,
-    transparent 70%
-  ) !important;
-}
 
 .comment:hover .commentMenu,
 .comment.selected .commentMenu {

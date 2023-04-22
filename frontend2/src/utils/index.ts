@@ -183,11 +183,11 @@ export async function openFileSelector(accept?: string) {
 }
 
 export function getAndSaveClientId() {
-  let clientId = window.localStorage.getItem('watchparty-clientid');
+  let clientId = window.localStorage.getItem('watchit-clientid');
   if (!clientId) {
     // Generate a new clientID and save it
     clientId = uuidv4();
-    window.localStorage.setItem('watchparty-clientid', clientId);
+    window.localStorage.setItem('watchit-clientid', clientId);
   }
   return clientId;
 }
