@@ -259,17 +259,16 @@ export default class App extends React.Component<AppProps, AppState> {
                 warningMessage: '',
             });
             // Load username from localstorage
-            let userName =
-                window.localStorage.getItem('watchit_username') || '';
-            if (userName) {
+            let userName = window.localStorage.getItem('watchit_username') || '';
+            if (userName !== '') {
                 this.setState({ isNameSet: true });
+                toast.success('Joined room!');
             } else {
                 this.setState({ isNameSet: false });
             }
             console.log('username', userName);
             console.log('isNameSet', this.state.isNameSet);
             this.updateName(null, { value: userName });
-            toast.success('Joined room!');
         });
         socket.on('connect_error', (err: any) => {
             console.error(err);

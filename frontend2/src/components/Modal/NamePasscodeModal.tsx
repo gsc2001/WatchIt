@@ -13,7 +13,7 @@ export const NamePasscodeModal = ({
     useEffect(() =>{
         const temp_name = window.localStorage.getItem('watchit_username')
         if (temp_name && temp_name != name){
-            setName(JSON.parse(temp_name)) 
+            setName(temp_name) 
         }
     }, [])
     
@@ -21,7 +21,7 @@ export const NamePasscodeModal = ({
     const [passcode, setPasscode] = useState('');
 
     const saveNameAndPasscode = () => {
-        window.localStorage.setItem('watchit_username', JSON.stringify(name));
+        window.localStorage.setItem('watchit_username', name);
 
         if (isPrivate) {
             savePasscode(roomId, passcode);

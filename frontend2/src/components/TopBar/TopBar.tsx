@@ -7,29 +7,6 @@ import { Icon, Button, SemanticSIZES } from 'semantic-ui-react';
 import { InviteButton } from '../Buttons';
 import appStyles from '../App/App.module.css';
 
-export async function createRoom(
-    openNewTab: boolean | undefined,
-    video: string = ''
-) {
-    const response = await window.fetch(serverPath + '/createRoom', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            video,
-        }),
-    });
-    const data = await response.json();
-    const { name } = data;
-    console.log(name);
-
-    if (openNewTab) {
-        window.open('/watch/' + name);
-    } else {
-        window.location.assign('/watch/' + name);
-    }
-}
 
 // export class NewRoomButton extends React.Component<{
 //     size?: SemanticSIZES;

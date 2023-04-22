@@ -8,7 +8,7 @@ const JoinRoomModal = ({
     closeJoinRoomModal: () => void;
 }) => {
     const joinRoom = async (openNewTab: boolean) => {
-        localStorage.setItem('watchit_username', JSON.stringify(name));
+        localStorage.setItem('watchit_username', name);
 
         if (openNewTab) {
             window.open('/watch/' + roomCode);
