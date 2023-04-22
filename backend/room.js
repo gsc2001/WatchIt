@@ -33,6 +33,7 @@ class Room {
                 if (!memberIds.includes(key)) {
                     delete this.tsMap[key];
                     delete this.nameMap[key];
+                    delete this.avatarIdMap[key];
                 }
             });
             if (this.video) {
@@ -151,7 +152,23 @@ class Room {
         if (data && data.length > 50) {
             return;
         }
+        const sendJoinedMessage = false;
+        if (!(socket.id in this.nameMap)) {
+            sendJoinedMessage = true;
+        }
+
         this.nameMap[socket.id] = data;
+
+        if (sendJoinedMessage) {
+            const chatMsg = {
+                senderName: this.nameMap[socket.id],
+                avatarId: this.avatarIdMap[socket.id],
+                msg: this.nameMap[socket.id],
+                cmd: 'join',
+                timestamp: new Date().toISOString(),
+            };
+            this.addChatMessage(chatMsg);
+        }
     }
     setTimestamp(socket, data) {
         if (data > this.videoTS) {
@@ -165,6 +182,14 @@ class Room {
     }
 
     disconnectUser = socket => {
+        const chatMsg = {
+            senderName: this.nameMap[socket.id],
+            avatarId: this.avatarIdMap[socket.id],
+            msg: this.nameMap[socket.id],
+            cmd: 'left',
+            timestamp: new Date().toISOString(),
+        };
+        this.addChatMessage(chatMsg);
         let index = this.roster.findIndex(user => user.socketId === socket.id);
         this.roster.splice(index, 1)[0];
         console.log('disconnected', socket.id);
