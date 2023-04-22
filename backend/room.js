@@ -57,7 +57,7 @@ class Room {
         this.io.of(this.namespace).on('connection', socket => {
             const clientId = socket.handshake.query?.clientId;
             console.log('client joined room: ', this.roomId, socket.id);
-            this.avatarIdMap[socket.id] = this.roster.length % 7 + 1;
+            this.avatarIdMap[socket.id] = (this.roster.length % 7) + 1;
             this.roster.push({ clientId, socketId: socket.id });
 
             socket.emit('REC:host', this.getState());
@@ -110,14 +110,38 @@ class Room {
     playVideo(socket) {
         socket.broadcast.emit('REC:play');
         this.paused = false;
+        const chatMsg = {
+            senderName: this.nameMap[socket.id],
+            avatarId: this.avatarIdMap[socket.id],
+            cmd: 'play',
+            msg: this.tsMap[socket.id].toString(),
+            timestamp: new Date().toISOString(),
+        };
+        this.addChatMessage(chatMsg);
     }
     pauseVideo(socket) {
         socket.broadcast.emit('REC:pause');
         this.paused = true;
+        const chatMsg = {
+            senderName: this.nameMap[socket.id],
+            avatarId: this.avatarIdMap[socket.id],
+            cmd: 'pause',
+            msg: this.tsMap[socket.id].toString(),
+            timestamp: new Date().toISOString(),
+        };
+        this.addChatMessage(chatMsg);
     }
     seekVideo(socket, data) {
         this.videoTS = data;
         socket.broadcast.emit('REC:seek', data);
+        const chatMsg = {
+            senderName: this.nameMap[socket.id],
+            avatarId: this.avatarIdMap[socket.id],
+            cmd: 'seek',
+            msg: data.toString(),
+            timestamp: new Date().toISOString(),
+        };
+        this.addChatMessage(chatMsg);
     }
 
     changeUserName(socket, data) {

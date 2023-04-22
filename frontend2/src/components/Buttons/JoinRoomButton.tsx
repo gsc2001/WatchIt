@@ -21,7 +21,7 @@ const JoinRoomModal = ({
     useEffect(() => {
         const name = localStorage.getItem('watchit_username');
         if (name) {
-            setName(JSON.parse(name));
+            setName(name);
         }
     }, []);
 

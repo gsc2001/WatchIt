@@ -23,7 +23,7 @@ const NewRoomModal = ({
     const [passcode, setPassCode] = useState('');
 
     const createRoom = async (openNewTab: boolean | undefined) => {
-        localStorage.setItem('watchit_username', JSON.stringify(name));
+        localStorage.setItem('watchit_username', name);
 
         const roomData = {
             passcode,
@@ -50,7 +50,7 @@ const NewRoomModal = ({
     useEffect(() => {
         const name = localStorage.getItem('watchit_username');
         if (name) {
-            setName(JSON.parse(name));
+            setName(name);
         }
     }, []);
 

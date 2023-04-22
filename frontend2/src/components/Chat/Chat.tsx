@@ -38,6 +38,7 @@ export class Chat extends React.Component<ChatProps> {
     async componentDidMount() {
         this.scrollToBottom();
         this.messagesRef.current?.addEventListener('scroll', this.onScroll);
+        console.log(this.props.chat);
         init({});
     }
 
@@ -192,7 +193,7 @@ const ChatMessage = ({
                             justifyContent: 'space-between',
                         }}
                     >
-                        <Comment.Author as="a">{senderName}</Comment.Author>
+                        <Comment.Author>{senderName}</Comment.Author>
                         <Comment.Metadata className={styles.dark}>
                             <div
                                 title={new Date(timestamp).toLocaleDateString()}
