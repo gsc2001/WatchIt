@@ -69,19 +69,15 @@ export class Controls extends React.Component<ControlsProps> {
       roomSeek,
       localFullScreen,
       localToggleMute,
-      localSubtitleModal,
-      localSeek,
       currentTime,
       duration,
       leaderTime,
       isPauseDisabled,
       disabled,
-      subtitled,
       paused,
       muted,
       volume,
     } = this.props;
-    const isBehind = leaderTime && leaderTime - currentTime > 5;
     const buffers = this.props.timeRanges.map(({ start, end }) => {
       const buffStartPct = (start / duration) * 100;
       const buffLengthPct = ((end - start) / duration) * 100;
@@ -115,7 +111,7 @@ export class Controls extends React.Component<ControlsProps> {
         </div>
         <Progress
           size="tiny"
-          color="blue"
+          color="red"
           onClick={
             duration < Infinity && !this.props.disabled ? roomSeek : undefined
           }

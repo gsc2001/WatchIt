@@ -18,7 +18,7 @@ io.on('disconnect', socket => {
 });
 
 const rooms = new Map();
-rooms.set('010230', new Room(io, '010230'));
+rooms.set('012345', new Room(io,'012345'));
 
 app.get('/ping', async (req, res) => {
     res.json({ success: true, server_time: Date.now() });
