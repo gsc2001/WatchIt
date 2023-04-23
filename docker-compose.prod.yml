@@ -12,8 +12,6 @@ services:
             - ./data:/data/db
     backend:
         build: ./backend
-        volumes:
-            - $PWD/backend:/app
         environment:
             - DEBUG=0
             - SECRET_KEY=$SECRET_KEY
@@ -27,10 +25,8 @@ services:
         build:
             context: ./frontend
             dockerfile: Dockerfile.prod
-        volumes:
-            - $PWD/frontend:/app
         environment:
-            - NODE_ENV=development
+            - NODE_ENV=production
             - CHOKIDAR_USEPOLLING=true
             - WDS_SOCKET_PORT=0
         depends_on:
